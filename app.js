@@ -97,7 +97,7 @@
           <td class="num"><input class="w-num" type="number" step="0.01" min="0" data-f="actual" value="${esc(act)}" placeholder="–" aria-label="Faktiski"></td>
           <td class="num"><input class="w-num" type="number" step="0.01" min="0" data-f="paid" value="${num(r.paid)||""}" placeholder="0" aria-label="Samaksāts"></td>
           <td><textarea class="w-note grow" rows="1" data-f="note" aria-label="Piezīmes">${esc(r.note)}</textarea>${r.range ? `<div class="hint">Tipiski LV: ${esc(r.range)}</div>` : ""}</td>
-          <td><button class="icon" data-act="del" title="Dzēst pozīciju" aria-label="Dzēst">×</button></td></tr>`;
+          <td><button class="del" data-act="del" title="Dzēst pozīciju">Dzēst</button></td></tr>`;
       });
       html += `<tr class="addrow"><td colspan="8"><button data-act="add" data-cat="${esc(cat)}">+ Pievienot pozīciju</button></td></tr>`;
     });
@@ -107,6 +107,7 @@
       <tr class="total big"><td colspan="3">KOPĀ</td><td class="num">${eur(t.total)}</td><td colspan="4" class="${diff>=0?"pos":"neg"}">${diff>=0 ? eur(diff)+" zem mērķa" : eur(-diff)+" virs mērķa"} (${eur(target)})</td></tr>`;
     body.innerHTML = html; autosize(body);
   }
+  function askDel(msg){ return window.confirm(msg + "\n\nŠo nevarēs atsaukt."); }
   $("#budgetBody").addEventListener("change", e => {
     const inp = e.target, tr = inp.closest("tr[data-id]"); if(!tr || !inp.dataset.f || !db) return;
     const r = budget.find(x => x.id === tr.dataset.id); if(!r) return;
@@ -125,8 +126,8 @@
       const order = rows.length ? Math.max(...rows.map(r => num(r.order))) + 1 : 1;
       save(sb.from("plan_budget").insert({cat, item:"Jauna pozīcija", qty:1, price:0, per_guest:false, uplift:false, actual:null, paid:0, note:"", sort:order}));
     } else if(b.dataset.act === "del" && tr){
-      if(b.dataset.confirm){ save(sb.from("plan_budget").delete().eq("id", tr.dataset.id)); }
-      else { b.dataset.confirm = "1"; b.textContent = "Dzēst?"; b.style.fontSize = "13px"; b.style.color = "var(--bad)"; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.confirm; b.textContent = "×"; b.style.cssText=""; } }, 3000); }
+      const r = budget.find(x => x.id === tr.dataset.id);
+      if(askDel(`Vai tiešām dzēst budžeta pozīciju „${(r && r.item) || "bez nosaukuma"}”?`)) save(sb.from("plan_budget").delete().eq("id", tr.dataset.id));
     } else if(b.dataset.act === "qty" && tr){
       save(sb.from("plan_budget").update({per_guest:false, qty:num(settings.guests)}).eq("id", tr.dataset.id));
     }
@@ -160,7 +161,7 @@
       <td><input data-f="diet" value="${esc(g.diet)}" placeholder="–" style="min-width:120px" aria-label="Ēdiena piezīmes"></td>
       <td><input data-f="stay" type="checkbox" ${g.stay?"checked":""} aria-label="Nakšņo"></td>
       <td><textarea class="grow" rows="1" data-f="note" style="min-width:180px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
-      <td><button class="icon" data-act="del" title="Dzēst viesi" aria-label="Dzēst">×</button></td></tr>`).join("");
+      <td><button class="del" data-act="del" title="Dzēst viesi">Dzēst</button></td></tr>`).join("");
     autosize($("#guestBody"));
   }
   $("#gSearch").addEventListener("input", renderGuests);
@@ -182,8 +183,8 @@
   $("#guestBody").addEventListener("click", e => {
     const b = e.target.closest("button[data-act=del]"); if(!b || !db) return;
     const tr = b.closest("tr[data-id]");
-    if(b.dataset.confirm) save(sb.from("plan_guests").delete().eq("id", tr.dataset.id));
-    else { b.dataset.confirm = "1"; b.textContent = "Dzēst?"; b.style.fontSize = "13px"; b.style.color = "var(--bad)"; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.confirm; b.textContent = "×"; b.style.cssText=""; } }, 3000); }
+    const g = guests.find(x => x.id === tr.dataset.id);
+    if(askDel(`Vai tiešām dzēst viesi „${(g && g.name) || "bez vārda"}”?`)) save(sb.from("plan_guests").delete().eq("id", tr.dataset.id));
   });
 
   // ---------- keep typing safe while live updates arrive ----------
