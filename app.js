@@ -58,9 +58,12 @@
     $("#sPaid").textContent = eur(t.paid);
     $("#sLeft").textContent = "vēl jāmaksā ~" + eur(Math.max(0, t.best - t.paid));
     const g = guestStats();
-    $("#sGuests").textContent = g.yes + " / " + num(settings.guests);
-    $("#sGuestsSub").textContent = "apstiprinājuši no plānotajiem · sarakstā " + g.all;
-    $("#sPer").textContent = num(settings.guests) ? eur(t.total / num(settings.guests)) : "–";
+    // reālie viesi = visi sarakstā, izņemot atteikušos (ar personu skaitu)
+    const real = g.all - g.no;
+    $("#sGuests").textContent = real;
+    $("#sGuestsSub").textContent = `sarakstā · ${g.yes} apstiprinājuši · plānoti ${num(settings.guests)}`;
+    $("#sPer").textContent = real ? eur(t.total / real) : "–";
+    $("#sPerSub").textContent = real ? `kopējās izmaksas ar rezervi / ${real} viesi sarakstā` : "pievieno viesus sarakstā";
 
     document.querySelectorAll("#settingsForm input").forEach(inp => {
       if(document.activeElement === inp) return;
