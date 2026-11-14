@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Mūsu kāzu plānotājs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Fraunces:wght@400;600&family=Nunito:wght@400;700;800&display=swap">
 <style>
 /* Layout: one narrow column, sticky tab bar, sections as quiet panels; budget and guests are editable tables */
 :root{
@@ -102,6 +102,94 @@ textarea{font:inherit;color:var(--ink);background:transparent;border:1px solid t
 textarea:hover{border-color:var(--line)} textarea:focus{background:var(--bg);border-color:var(--accent);outline:none}
 td{vertical-align:top} td.num,td .icon{vertical-align:top}.w-num{width:96px}.w-qty{width:110px}
 @media (max-width:560px){.countdown{text-align:left}.headright{justify-items:start!important}}
+
+/* uzdevumi */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px}
+label.inline{display:inline-flex!important;flex-direction:row!important;gap:6px;align-items:center;font-size:14px;color:var(--muted)}
+label.inline input[type=checkbox]{width:auto}
+.phase{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.phase.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.phase-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:6px}
+.phase-head .ph{margin:0;flex:0 1 auto}
+.ph{font-family:var(--display);font-weight:400;font-size:19px;letter-spacing:0;text-transform:none;color:var(--ink)}
+ul.tasks,ul.nexts,ul.tguests{list-style:none;margin:0;padding:0}
+li.task{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:8px 0;border-top:1px solid var(--line)}
+li.task input[type=checkbox],ul.nexts input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
+li.task label{cursor:pointer}
+li.task .note{display:block;font-size:13px;color:var(--muted)}
+li.task.checked .txt{text-decoration:line-through;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;align-items:center;max-width:260px}
+.tag{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--muted);white-space:nowrap}
+.tag.t{background:var(--gold-soft);color:var(--ink)} .tag.n{background:var(--ok-soft);color:var(--ok)}
+form.addtask{display:flex;gap:8px;margin-top:8px}
+form.addtask input{flex:1}
+ul.nexts li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+ul.nexts li:last-child{border-bottom:none}
+ul.nexts .hint{display:block}
+a.more{display:inline-block;margin:8px 0 4px;color:var(--accent);font-weight:600;text-decoration:none}
+@media (max-width:560px){li.task{grid-template-columns:auto 1fr}.tags{grid-column:2;justify-content:flex-start}}
+/* sēdvietas */
+.tcards{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.tcard.over{border-color:var(--bad)}
+.trow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tcard input.tname{font-weight:700;flex:1;background:transparent;border-color:transparent}
+.tcard input.tname:hover,.tcard input.tname:focus{border-color:var(--line)}
+.tcard .cap{font-variant-numeric:tabular-nums;font-weight:700;color:var(--muted)}
+.tcard select{width:auto;flex:1 0 120px}
+ul.tguests{font-size:14px}
+ul.tguests li{padding:2px 0}
+.sg{display:grid;grid-template-columns:1fr minmax(160px,240px);gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.sg:last-child{border-bottom:none}
+/* programma */
+table.prog td{vertical-align:top}
+select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)}
+/* ielūgums */
+.invlayout{display:grid;gap:20px;grid-template-columns:minmax(260px,360px) 1fr;align-items:start}
+@media (max-width:820px){.invlayout{grid-template-columns:1fr}}
+.inv-form{grid-template-columns:1fr!important}
+.invwrap{display:flex;justify-content:center}
+.inv{width:100%;max-width:480px;aspect-ratio:5/7;color:#2b2420;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.inv h1{text-wrap:balance}
+.inv-cls{background:#FBF7F0;padding:18px;font-family:"Cormorant Garamond",Georgia,serif}
+.inv-cls .c-b1{border:1px solid #B89B6E;height:100%;padding:6px}
+.inv-cls .c-b2{border:1px solid #D9C7A6;height:100%;display:flex;flex-direction:column;justify-content:space-around;align-items:center;text-align:center;padding:20px 18px}
+.inv-cls .c-lead{font-size:17px;font-style:italic;margin:10px 0 0;line-height:1.35}
+.inv-cls h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:clamp(30px,6vw,42px);color:#5B4630}
+.inv-cls .c-amp{font-size:28px;color:#B89B6E;margin:2px 0;font-style:italic}
+.inv-cls .c-date{font-size:19px;font-weight:600;margin:0;letter-spacing:.02em}
+.inv-cls .c-rule{width:60px;height:1px;background:#B89B6E;margin:10px auto}
+.inv-cls p{margin:6px 0;font-size:16px;line-height:1.35}
+.inv-cls .c-small{font-size:14px}
+.inv-mod{background:#F4F1EA;padding:34px 30px;font-family:Manrope,system-ui,sans-serif;display:flex;flex-direction:column;justify-content:space-between}
+.inv-mod .acc{color:#B5543C}
+.inv-mod .m-top{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.inv-mod h1{font-family:Fraunces,Georgia,serif;font-size:clamp(36px,8vw,54px);font-weight:400;line-height:1;color:#1F2A2A}
+.inv-mod .m-and{display:flex;align-items:center;gap:10px;margin:8px 0;font-family:Fraunces,serif;font-style:italic;font-size:20px}
+.inv-mod .m-and i{display:block;width:40px;height:1px;background:#B5543C}
+.inv-mod .m-lead{font-size:15px;max-width:30ch;margin:0}
+.inv-mod .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;border-top:1px solid #1F2A2A;padding-top:14px;font-size:14px}
+.inv-mod small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7a7a72;font-weight:700}
+.inv-fun{background:#FFD9C7;padding:16px;font-family:Nunito,system-ui,sans-serif}
+.inv-fun .f-card{background:#FFF8EE;border:3px dashed #E2634B;border-radius:22px;height:100%;padding:20px 18px;display:flex;flex-direction:column;justify-content:space-between;text-align:center}
+.inv-fun .f-top{font-weight:800;color:#E2634B;font-size:14px}
+.inv-fun h1{font-family:Nunito,sans-serif;font-weight:800;font-size:clamp(30px,6.5vw,42px);line-height:1.05;color:#2F3E5C}
+.inv-fun h1 span{font-size:20px;color:#E2634B}
+.inv-fun .f-sub{font-weight:800;color:#3E8E7E;margin:6px 0 0}
+.inv-fun p{margin:0;font-size:15px}
+.inv-fun .f-boxes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:13px;font-weight:700}
+.inv-fun .f-boxes div{background:#fff;border-radius:12px;padding:8px 4px;border:2px solid #FFD9C7}
+.inv-fun small{display:block;font-size:10px;text-transform:uppercase;color:#E2634B;letter-spacing:.08em}
+.inv-fun .f-rsvp{font-weight:800;color:#2F3E5C}
+.inv-fun .f-small{font-size:13px;color:#555}
+@media print{
+  body{background:#fff;padding:0}
+  body *{visibility:hidden}
+  #invPreview,#invPreview *{visibility:visible}
+  #invPreview{position:absolute;inset:0;display:block}
+  .inv{max-width:none;width:100%;height:100vh;aspect-ratio:auto;box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A5;margin:0}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <style>[hidden]{display:none!important} html{color-scheme:light dark} :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0}</style>
@@ -129,6 +217,10 @@ td{vertical-align:top} td.num,td .icon{vertical-align:top}.w-num{width:96px}.w-q
     <a href="#parskats" data-tab="parskats">Pārskats</a>
     <a href="#budzets" data-tab="budzets">Budžets</a>
     <a href="#viesi" data-tab="viesi">Viesi</a>
+    <a href="#uzdevumi" data-tab="uzdevumi">Uzdevumi</a>
+    <a href="#sedvietas" data-tab="sedvietas">Sēdvietas</a>
+    <a href="#programma" data-tab="programma">Programma</a>
+    <a href="#ieluguma" data-tab="ieluguma">Ielūgums</a>
     <span class="status" id="status">Ielādē…</span>
   </nav>
 
@@ -144,14 +236,17 @@ td{vertical-align:top} td.num,td .icon{vertical-align:top}.w-num{width:96px}.w-q
     </div>
 
     <div class="block">
+      <h3>Nākamie uzdevumi <span class="hint" id="sTasksWrap" style="text-transform:none;letter-spacing:0;font-weight:500">· izdarīti <b id="sTasks">–</b></span></h3>
+      <div class="panel" id="nextTasks"><p class="hint">Ielādē…</p></div>
+    </div>
+    <div class="block">
       <h3>Pārējie plāni</h3>
       <div class="links">
-        <a href="https://claude.ai/artifact/8W7G3Fc3SxSkdqNX5uTrDX" target="_blank" rel="noopener"><b>Uzdevumu saraksts</b><span>~70 uzdevumi pa laika posmiem</span></a>
-        <a href="https://claude.ai/artifact/M6mTZERqFKncdYSJj3YcXE" target="_blank" rel="noopener"><b>Sēdvietu plāns</b><span>Serpentīna galdi, viesi pie galdiem</span></a>
-        <a href="https://claude.ai/artifact/6o1nKAUMYstnhDrh9ZTEE1" target="_blank" rel="noopener"><b>Dienas programma</b><span>No rīta līdz 03:00</span></a>
-        <a href="https://claude.ai/artifact/9WXfFHYVU2acVi5bZJTVxF" target="_blank" rel="noopener"><b>Ielūgumi</b><span>Ielūguma dizains</span></a>
+        <a href="#uzdevumi"><b>Uzdevumu saraksts</b><span>Uzdevumi pa laika posmiem līdz kāzām</span></a>
+        <a href="#sedvietas"><b>Sēdvietu plāns</b><span>Galdi un viesi pie galdiem</span></a>
+        <a href="#programma"><b>Dienas programma</b><span>No rīta līdz vēlai naktij, tradīcijas</span></a>
+        <a href="#ieluguma"><b>Ielūgums</b><span>Teksts, stils un drukāšana</span></a>
       </div>
-      <p class="hint">Šie plāni ir claude.ai lapas un atveras tikai tiem, kam tie kopīgoti.</p>
     </div>
 
     <div class="block">
@@ -183,6 +278,10 @@ td{vertical-align:top} td.num,td .icon{vertical-align:top}.w-num{width:96px}.w-q
         <tbody id="budgetBody"><tr><td colspan="8" class="empty">Ielādē budžetu…</td></tr></tbody>
       </table>
     </div>
+    <form class="toolbar" id="catForm" style="margin-top:12px">
+      <input class="grow" id="catName" placeholder="Jaunas sadaļas nosaukums, piem., Kāzu nakts" aria-label="Jaunas sadaļas nosaukums" maxlength="80">
+      <button type="submit">+ Pievienot sadaļu</button>
+    </form>
     <p class="hint">Daudzumā “uz viesi” nozīmē, ka tiek ņemts plānotais viesu skaits no Pārskata. ★ pie cenas nozīmē, ka tai pieskaitīts ēdināšanas cenu pieaugums.</p>
   </section>
 
@@ -208,9 +307,73 @@ td{vertical-align:top} td.num,td .icon{vertical-align:top}.w-num{width:96px}.w-q
     </div>
     <div class="tablebox">
       <table>
-        <thead><tr><th>Vārds</th><th>Puse</th><th>Grupa</th><th class="num">Pers.</th><th>Statuss</th><th>Ēdiena piezīmes</th><th>Nakšņo</th><th>Piezīmes</th><th></th></tr></thead>
-        <tbody id="guestBody"><tr><td colspan="9" class="empty">Ielādē viesus…</td></tr></tbody>
+        <thead><tr><th>Vārds</th><th>Puse</th><th>Grupa</th><th class="num">Pers.</th><th>Statuss</th><th>Ēdiena piezīmes</th><th>Nakšņo</th><th>Sēž blakus</th><th>Piezīmes</th><th></th></tr></thead>
+        <tbody id="guestBody"><tr><td colspan="10" class="empty">Ielādē viesus…</td></tr></tbody>
       </table>
+    </div>
+  </section>
+
+  <!-- UZDEVUMI -->
+  <section id="uzdevumi" hidden>
+    <div class="toolbar">
+      <h2 class="grow" style="margin:0">Uzdevumu saraksts</h2>
+      <label class="inline"><input type="checkbox" id="onlyOpen"> Rādīt tikai neizdarītos</label>
+    </div>
+    <div class="stat" id="taskProgress" style="margin-bottom:16px"></div>
+    <div id="taskList"><p class="empty">Ielādē…</p></div>
+  </section>
+
+  <!-- SĒDVIETAS -->
+  <section id="sedvietas" hidden>
+    <div class="toolbar">
+      <h2 class="grow" style="margin:0">Sēdvietu plāns</h2>
+      <span id="seatChips"></span>
+    </div>
+    <div class="tcards" id="tableCards"></div>
+    <form class="form" id="tableForm" style="margin-top:12px">
+      <label for="tName">Jauns galds<input id="tName" required placeholder="Piem., 4. galds"></label>
+      <label for="tShape">Forma<select id="tShape"><option>serpentīns</option><option>apaļš</option><option>taisnstūra</option></select></label>
+      <label for="tSeats">Vietas<input id="tSeats" type="number" min="1" max="80" value="10"></label>
+      <label style="justify-content:flex-end"><button class="primary" type="submit">Pievienot galdu</button></label>
+    </form>
+    <div class="block">
+      <div class="toolbar">
+        <h3 class="grow" style="margin:0">Viesi pie galdiem</h3>
+        <select id="seatFilter" aria-label="Kurus viesus rādīt" style="width:auto"><option value="open">Tikai bez galda</option><option value="all">Visi viesi</option></select>
+      </div>
+      <div class="panel" id="seatGuests"></div>
+      <p class="hint">Rādīti viesi, kas nav atteikuši. Vietu skaitā tiek ņemts viesa personu skaits.</p>
+    </div>
+  </section>
+
+  <!-- PROGRAMMA -->
+  <section id="programma" hidden>
+    <h2>Kāzu dienas programma</h2>
+    <div id="programList"></div>
+    <div class="block">
+      <h3>Tradīcijas</h3>
+      <div id="tradList"></div>
+    </div>
+  </section>
+
+  <!-- IELŪGUMS -->
+  <section id="ieluguma" hidden>
+    <div class="toolbar">
+      <h2 class="grow" style="margin:0">Ielūgums</h2>
+      <button class="primary" id="invPrint" type="button">Drukāt / saglabāt PDF</button>
+    </div>
+    <div class="notice" id="invMissing" hidden>Lai ielūguma dati saglabātos, Supabase vienreiz jāpalaiž fails <b>supabase-update-2.sql</b>.</div>
+    <div class="invlayout">
+      <form class="form inv-form" id="invForm" onsubmit="return false">
+        <label for="iBride">Līgavas vārds<input id="iBride" data-k="bride"></label>
+        <label for="iGroom">Līgavaiņa vārds<input id="iGroom" data-k="groom"></label>
+        <label for="iTime">Ceremonijas laiks<input id="iTime" type="time" data-k="ceremony_time"></label>
+        <label for="iRsvp">Atbildēt līdz<input id="iRsvp" type="date" data-k="rsvp_date"></label>
+        <label for="iContact">Kontakti<input id="iContact" data-k="contact" placeholder="tālrunis · e-pasts"></label>
+        <label for="iStyle">Stils<select id="iStyle" data-k="inv_style"><option value="klasisks">Klasisks</option><option value="moderns">Moderns</option><option value="rotalīgs">Rotaļīgs</option></select></label>
+        <p class="hint" style="grid-column:1/-1">Datums tiek ņemts no Pārskata. Ielūgumu var izdrukāt vai saglabāt kā PDF (drukas logā izvēlies "Saglabāt kā PDF").</p>
+      </form>
+      <div id="invPreview" class="invwrap"></div>
     </div>
   </section>
 </div>
