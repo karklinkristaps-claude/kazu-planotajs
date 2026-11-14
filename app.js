@@ -176,6 +176,9 @@
     const s = guestStats();
     $("#guestChips").innerHTML = `<span class="chip ok">${s.yes} nāks</span> <span class="chip warn">${s.inv} gaida atbildi</span> <span class="chip bad">${s.no} atteica</span> <span class="chip mut">${s.notInv} nav ielūgti</span>`;
     $("#groups").innerHTML = [...new Set(guests.map(g => g.group).filter(Boolean))].map(g => `<option value="${esc(g)}">`).join("");
+    { const sel = $("#gSit"), cur = sel.value, ok = guests.some(g => "sit_with" in g) || "inv_style" in settings;
+      sel.disabled = !ok; sel.title = ok ? "" : "Vispirms Supabase jāpalaiž supabase-update-2.sql";
+      sel.innerHTML = '<option value="">—</option>' + [...guests].sort((a,b) => (a.name||"").localeCompare(b.name||"","lv")).map(g => `<option value="${esc(g.id)}"${g.id === cur ? " selected" : ""}>${esc(g.name)}</option>`).join(""); }
     if(isEditing("#guestBody")){ pending.guests = true; return; }
     if(!guestsLoaded) return;
     const q = $("#gSearch").value.trim().toLowerCase(), f = $("#gFilter").value;
@@ -184,21 +187,21 @@
     if(!guests.length){ $("#guestBody").innerHTML = `<tr><td colspan="10" class="empty">Sarakstā vēl nav neviena viesa. Pievieno pirmo ar formu augstāk.</td></tr>`; return; }
     if(!list.length){ $("#guestBody").innerHTML = `<tr><td colspan="10" class="empty">Neviens viesis neatbilst meklēšanai.</td></tr>`; return; }
     const opt = (arr, v) => arr.map(o => `<option${o===v?" selected":""}>${o}</option>`).join("");
-    const hasSit = guests.some(g => "sit_with" in g);
+    const hasSit = guests.some(g => "sit_with" in g) || "inv_style" in settings;
     const byName = [...guests].sort((a,b) => (a.name||"").localeCompare(b.name||"","lv"));
     const sitSel = g => hasSit
-      ? `<select data-f="sit_with" style="min-width:170px" aria-label="Sēž blakus">${'<option value="">—</option>' + byName.filter(o => o.id !== g.id).map(o => `<option value="${esc(o.id)}"${o.id === g.sit_with ? " selected" : ""}>${esc(o.name)}</option>`).join("")}</select>`
-      : `<select disabled style="min-width:170px" title="Vispirms Supabase jāpalaiž supabase-update-2.sql"><option>—</option></select>`;
+      ? `<select data-f="sit_with" style="min-width:140px" aria-label="Sēž blakus">${'<option value="">—</option>' + byName.filter(o => o.id !== g.id).map(o => `<option value="${esc(o.id)}"${o.id === g.sit_with ? " selected" : ""}>${esc(o.name)}</option>`).join("")}</select>`
+      : `<select disabled style="min-width:140px" title="Vispirms Supabase jāpalaiž supabase-update-2.sql"><option>—</option></select>`;
     $("#guestBody").innerHTML = list.map(g => `<tr data-id="${esc(g.id)}">
       <td><input data-f="name" value="${esc(g.name)}" style="min-width:160px" aria-label="Vārds"></td>
       <td><select data-f="side" style="min-width:130px" aria-label="Puse">${opt(["Līgavas","Līgavaiņa","Kopīgie"], g.side)}</select></td>
       <td><input data-f="group" value="${esc(g.group)}" list="groups" style="min-width:110px" aria-label="Grupa"></td>
       <td class="num"><input data-f="count" type="number" min="1" step="1" value="${esc(g.count||1)}" style="width:60px" aria-label="Personas"></td>
       <td><select data-f="status" style="min-width:160px" aria-label="Statuss">${opt(STATUSES, g.status || "Nav ielūgts")}</select></td>
-      <td><input data-f="diet" value="${esc(g.diet)}" placeholder="–" style="min-width:120px" aria-label="Ēdiena piezīmes"></td>
+      <td><input data-f="diet" value="${esc(g.diet)}" placeholder="–" style="min-width:100px" aria-label="Ēdiena piezīmes"></td>
       <td><input data-f="stay" type="checkbox" ${g.stay?"checked":""} aria-label="Nakšņo"></td>
       <td>${sitSel(g)}</td>
-      <td><textarea class="grow" rows="1" data-f="note" style="min-width:180px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
+      <td><textarea class="grow" rows="1" data-f="note" style="min-width:140px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
       <td><button class="del" data-act="del" title="Dzēst viesi">Dzēst</button></td></tr>`).join("");
     labelCells($("#viesi")); autosize($("#guestBody"));
   }
@@ -207,8 +210,19 @@
   $("#guestForm").addEventListener("submit", e => {
     e.preventDefault(); if(!db) return;
     const name = $("#gName").value.trim(); if(!name) return;
-    save(sb.from("plan_guests").insert({name, side:$("#gSide").value, grp:$("#gGroup").value.trim(), count:Math.max(1, num($("#gCount").value)||1), status:"Nav ielūgts", diet:"", stay:false, note:""}));
-    $("#gName").value = ""; $("#gCount").value = 1; $("#gName").focus();
+    const row = {name, side:$("#gSide").value, grp:$("#gGroup").value.trim(), count:Math.max(1, num($("#gCount").value)||1), status:"Nav ielūgts", diet:"", stay:false, note:""};
+    const sitId = $("#gSit").value || null;
+    $("#gName").value = ""; $("#gCount").value = 1; $("#gSit").value = ""; $("#gName").focus();
+    if(!sitId){ save(sb.from("plan_guests").insert(row)); return; }
+    // jaunais viesis sēž blakus izvēlētajam, un izvēlētajam uzreiz parādās jaunais viesis
+    save((async () => {
+      const res = await sb.from("plan_guests").insert({...row, sit_with: sitId}).select().single();
+      if(res.error) return res;
+      const other = guests.find(g => g.id === sitId);
+      const prev = other && other.sit_with && guests.find(g => g.id === other.sit_with);
+      if(prev && prev.sit_with === sitId){ const r2 = await sb.from("plan_guests").update({sit_with: null}).eq("id", prev.id); if(r2.error) return r2; }
+      return sb.from("plan_guests").update({sit_with: res.data.id}).eq("id", sitId);
+    })());
   });
   $("#guestBody").addEventListener("change", e => {
     const inp = e.target, tr = inp.closest("tr[data-id]"); if(!tr || !inp.dataset.f || !db) return;
