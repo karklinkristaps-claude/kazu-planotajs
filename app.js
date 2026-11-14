@@ -12,10 +12,10 @@
 
   let sb = null, db = true, settings = {...DEFAULTS}, budget = [], guests = [];
   let settingsLoaded = false, budgetLoaded = false, guestsLoaded = false;
-  const pending = {budget:false, guests:false, tasks:false, seating:false, program:false};
+  const pending = {budget:false, guests:false, tasks:false, seating:false, program:false, contacts:false};
 
   // ---------- tabs ----------
-  const TABS = ["parskats","budzets","viesi","uzdevumi","sedvietas","programma","ieluguma"];
+  const TABS = ["parskats","budzets","viesi","uzdevumi","sedvietas","programma","kontakti","ieluguma"];
   function showTab(){
     const t = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "parskats";
     TABS.forEach(id => { $("#"+id).hidden = id !== t; }); setTimeout(() => autosize($("#"+t)), 0);
@@ -260,7 +260,7 @@
   const MONTHS_LOC = ["janvārī","februārī","martā","aprīlī","maijā","jūnijā","jūlijā","augustā","septembrī","oktobrī","novembrī","decembrī"];
   const WEEKDAYS = ["svētdien","pirmdien","otrdien","trešdien","ceturtdien","piektdien","sestdien"];
   let tasks = [], tables = [], program = [], traditions = [];
-  const missing = {tasks:false, tables:false, program:false, traditions:false};
+  const missing = {tasks:false, tables:false, program:false, traditions:false, contacts:false};
   let onlyOpen = false; try{ onlyOpen = localStorage.getItem("kp-onlyopen") === "1"; }catch(e){}
 
   function weddingDate(){ if(!settings.date) return null; const d = new Date(settings.date + "T12:00:00"); return isNaN(d) ? null : d; }
@@ -510,6 +510,57 @@
     save(sb.from("plan_tasks").update({done: true}).eq("id", t.id));
   });
 
+
+  // ================= KONTAKTI =================
+  let contacts = [];
+  const C_CATS = ["Norises vieta","Ceremonija","Ēdināšana","Kūka un saldumi","Mūzika","Vakara vadītājs","Foto un video","Ziedi un noformējums","Tērpi","Frizieris un grims","Transports","Nakšņošana","Cits"];
+  const C_STATUS = ["Jāsazinās","Gaida piedāvājumu","Rezervēts","Samaksāts","Atteikts"];
+  function renderContacts(){
+    const el = $("#contactList"); if(!el) return;
+    if(missing.contacts){ el.innerHTML = '<div class="notice">Lai saglabātu kontaktus, Supabase vienreiz jāpalaiž fails <b>supabase-update-3.sql</b> (SQL Editor → New query → Run).</div>'; $("#contactChips").innerHTML = ""; return; }
+    if(isEditing("#contactList")){ pending.contacts = true; return; }
+    const q = ($("#cSearch").value || "").trim().toLowerCase();
+    const cnt = st => contacts.filter(c => c.status === st).length;
+    $("#contactChips").innerHTML = `<span class="chip ok">${cnt("Rezervēts") + cnt("Samaksāts")} rezervēti</span> <span class="chip warn">${cnt("Gaida piedāvājumu")} gaida piedāvājumu</span> <span class="chip mut">${cnt("Jāsazinās")} jāsazinās</span>`;
+    const list = contacts.filter(c => !q || [c.name, c.person, c.category, c.note, c.phone, c.email].join(" ").toLowerCase().includes(q))
+      .sort((a,b) => (C_CATS.indexOf(a.category) - C_CATS.indexOf(b.category)) || (a.name||"").localeCompare(b.name||"","lv"));
+    if(!contacts.length){ el.innerHTML = '<p class="empty">Kontaktu vēl nav. Pievieno pirmo ar formu augstāk.</p>'; return; }
+    if(!list.length){ el.innerHTML = '<p class="empty">Neviens kontakts neatbilst meklēšanai.</p>'; return; }
+    const opts = (arr, v) => (v && !arr.includes(v) ? `<option selected>${esc(v)}</option>` : "") + arr.map(o => `<option${o === v ? " selected" : ""}>${esc(o)}</option>`).join("");
+    const link = (href, txt) => txt ? `<a class="clink" href="${esc(href)}" target="_blank" rel="noopener">${esc(txt)}</a>` : "";
+    const webHref = w => /^https?:\/\//i.test(w) ? w : "https://" + w;
+    el.innerHTML = `<div class="tablebox"><table><thead><tr><th>Kategorija</th><th>Nosaukums</th><th>Kontaktpersona</th><th>Tālrunis</th><th>E-pasts</th><th>Mājaslapa</th><th>Statuss</th><th>Piezīmes</th><th></th></tr></thead><tbody>${list.map(c => `<tr data-id="${esc(c.id)}">
+      <td><select data-f="category" style="min-width:130px" aria-label="Kategorija">${opts(C_CATS, c.category)}</select></td>
+      <td><textarea class="grow" rows="1" data-f="name" style="min-width:160px;font-weight:600" aria-label="Nosaukums">${esc(c.name)}</textarea></td>
+      <td><input data-f="person" value="${esc(c.person)}" style="min-width:110px" aria-label="Kontaktpersona"></td>
+      <td><input data-f="phone" type="tel" value="${esc(c.phone)}" style="min-width:120px" aria-label="Tālrunis">${c.phone ? link("tel:" + c.phone.replace(/\s/g,""), "Zvanīt") : ""}</td>
+      <td><input data-f="email" type="email" value="${esc(c.email)}" style="min-width:160px" aria-label="E-pasts">${c.email ? link("mailto:" + c.email, "Rakstīt") : ""}</td>
+      <td><input data-f="web" value="${esc(c.web)}" style="min-width:110px" aria-label="Mājaslapa">${c.web ? link(webHref(c.web), "Atvērt") : ""}</td>
+      <td><select data-f="status" class="cstat s${C_STATUS.indexOf(c.status)}" style="min-width:180px" aria-label="Statuss">${opts(C_STATUS, c.status)}</select></td>
+      <td class="wide"><textarea class="grow" rows="1" data-f="note" style="min-width:160px" aria-label="Piezīmes">${esc(c.note)}</textarea></td>
+      <td><button class="del" data-act="del">Dzēst</button></td></tr>`).join("")}</tbody></table></div>`;
+    labelCells(el); autosize(el);
+  }
+  $("#cSearch").addEventListener("input", renderContacts);
+  $("#contactForm").addEventListener("submit", e => {
+    e.preventDefault(); if(!db) return;
+    const name = $("#cName").value.trim(); if(!name) return;
+    save(sb.from("plan_contacts").insert({category: $("#cCat").value, name, person: $("#cPerson").value.trim(), phone: $("#cPhone").value.trim(), email: $("#cEmail").value.trim(), web: "", status: "Jāsazinās", note: ""}));
+    ["#cName","#cPerson","#cPhone","#cEmail"].forEach(s => $(s).value = ""); $("#cName").focus();
+  });
+  $("#contactList").addEventListener("change", e => {
+    const inp = e.target, tr = inp.closest("tr[data-id]"); if(!tr || !inp.dataset.f) return;
+    const c = contacts.find(x => x.id === tr.dataset.id); if(!c) return;
+    c[inp.dataset.f] = inp.value.trim(); pending.contacts = true;
+    if(inp.tagName === "SELECT"){ pending.contacts = false; renderContacts(); }
+    save(sb.from("plan_contacts").update({[inp.dataset.f]: inp.value.trim()}).eq("id", c.id));
+  });
+  $("#contactList").addEventListener("click", e => {
+    const b = e.target.closest("button[data-act=del]"); if(!b) return;
+    const tr = b.closest("tr[data-id]"), c = contacts.find(x => x.id === tr.dataset.id);
+    confirmDel(b, () => save(sb.from("plan_contacts").delete().eq("id", tr.dataset.id)), "kontaktu „" + (c ? c.name : "") + "”");
+  });
+
   // ---------- loaders for new tables ----------
   function isMissingTable(error){ return error && (error.code === "42P01" || error.code === "PGRST205" || /does not exist|schema cache|Could not find/i.test(error.message || "")); }
   async function loadOpt(table, key, assign){
@@ -521,6 +572,7 @@
   const loadTables = () => loadOpt("plan_tables", "tables", d => tables = d);
   const loadProgram = () => loadOpt("plan_program", "program", d => program = d);
   const loadTraditions = () => loadOpt("plan_traditions", "traditions", d => traditions = d);
+  const loadContacts = () => loadOpt("plan_contacts", "contacts", d => contacts = d);
 
   // ---------- keep typing safe while live updates arrive ----------
   function isEditing(sel){ const a = document.activeElement; return a && a.matches("input:not([type=checkbox]),select,textarea") && a.closest(sel); }
@@ -530,13 +582,14 @@
     if(pending.tasks && !isEditing("#taskList")){ pending.tasks = false; renderTasks(); }
     if(pending.seating && !isEditing("#sedvietas")){ pending.seating = false; renderSeating(); }
     if(pending.program && !isEditing("#programma")){ pending.program = false; renderProgram(); }
+    if(pending.contacts && !isEditing("#kontakti")){ pending.contacts = false; renderContacts(); }
     renderOverview();
   }, 0));
 
   function autosize(root){ root.querySelectorAll("textarea.grow").forEach(t => { t.style.height = "auto"; if(t.scrollHeight) t.style.height = t.scrollHeight + "px"; }); }
   document.addEventListener("input", e => { if(e.target.matches && e.target.matches("textarea.grow")){ e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; } });
   document.addEventListener("keydown", e => { if(e.key === "Enter" && !e.shiftKey && e.target.matches && e.target.matches("textarea.grow")){ e.preventDefault(); e.target.blur(); } });
-  function renderAll(){ renderOverview(); renderBudget(); renderGuests(); renderTasks(); renderSeating(); renderProgram(); renderInvitation(); renderNextTasks(); }
+  function renderAll(){ renderOverview(); renderBudget(); renderGuests(); renderTasks(); renderSeating(); renderProgram(); renderInvitation(); renderNextTasks(); renderContacts(); }
 
   // ---------- Supabase ----------
   function settingsRow(){ return {id:1, names:settings.names||"", wedding_date:settings.date||null, guests:num(settings.guests), target:num(settings.target), reserve:num(settings.reserve), uplift:num(settings.uplift)}; }
@@ -546,7 +599,7 @@
     budgetLoaded = true; budget = data.map(r => ({id:r.id, cat:r.cat, item:r.item, qty:r.qty, price:r.price, perGuest:r.per_guest, uplift:r.uplift, actual:r.actual, paid:r.paid, note:r.note, range:r.range, order:r.sort})); }
   async function loadGuests(){ const {data, error} = await sb.from("plan_guests").select("*"); if(error) throw error;
     guestsLoaded = true; guests = data.map(g => ({...g, group:g.grp})); }
-  const loaders = {plan_settings:loadSettings, plan_budget:loadBudget, plan_guests:loadGuests, plan_tasks:loadTasks, plan_tables:loadTables, plan_program:loadProgram, plan_traditions:loadTraditions};
+  const loaders = {plan_settings:loadSettings, plan_budget:loadBudget, plan_guests:loadGuests, plan_tasks:loadTasks, plan_tables:loadTables, plan_program:loadProgram, plan_traditions:loadTraditions, plan_contacts:loadContacts};
   async function reload(fn){ try{ await fn(); status("Sinhronizēts"); renderAll(); } catch(e){ console.error(e); status("Kļūda: " + (e.message||e), true); } }
   function loadAll(){ return reload(async () => {
     const res = await Promise.allSettled(Object.values(loaders).map(f => f()));

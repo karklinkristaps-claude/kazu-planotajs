@@ -103,6 +103,9 @@ textarea{font:inherit;color:var(--ink);background:transparent;border:1px solid t
 textarea:hover{border-color:var(--line)} textarea:focus{background:var(--bg);border-color:var(--accent);outline:none}
 td{vertical-align:top} td.num,td .icon{vertical-align:top}.w-num{width:96px}.w-qty{width:110px}
 
+a.clink{display:inline-block;font-size:12px;font-weight:600;color:var(--accent);margin:2px 0 0 8px;text-decoration:none}
+a.clink:hover{text-decoration:underline}
+select.cstat.s2,select.cstat.s3{color:var(--ok);font-weight:700} select.cstat.s1{color:var(--warn);font-weight:700} select.cstat.s4{color:var(--muted);text-decoration:line-through}
 /* monogramma */
 .mono{--mono-bg:var(--bg);display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:22px;color:var(--ink)}
 .mono svg{width:120px;height:auto;display:block}
@@ -286,6 +289,7 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
     <a href="#uzdevumi" data-tab="uzdevumi">Uzdevumi</a>
     <a href="#sedvietas" data-tab="sedvietas">Sēdvietas</a>
     <a href="#programma" data-tab="programma">Programma</a>
+    <a href="#kontakti" data-tab="kontakti">Kontakti</a>
     <a href="#ieluguma" data-tab="ieluguma">Ielūgums</a>
     <span class="status" id="status">Ielādē…</span>
   </nav>
@@ -311,6 +315,7 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
         <a href="#uzdevumi"><b>Uzdevumu saraksts</b><span>Uzdevumi pa laika posmiem līdz kāzām</span></a>
         <a href="#sedvietas"><b>Sēdvietu plāns</b><span>Galdi un viesi pie galdiem</span></a>
         <a href="#programma"><b>Dienas programma</b><span>No rīta līdz vēlai naktij, tradīcijas</span></a>
+        <a href="#kontakti"><b>Kontakti</b><span>Piegādātāji, mūziķi, fotogrāfi</span></a>
         <a href="#ieluguma"><b>Ielūgums</b><span>Teksts, stils un drukāšana</span></a>
       </div>
     </div>
@@ -421,6 +426,24 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
       <h3>Tradīcijas</h3>
       <div id="tradList"></div>
     </div>
+  </section>
+
+  <!-- KONTAKTI -->
+  <section id="kontakti" hidden>
+    <div class="toolbar">
+      <h2 class="grow" style="margin:0">Kontakti</h2>
+      <span id="contactChips"></span>
+    </div>
+    <form class="form" id="contactForm" style="margin-bottom:12px">
+      <label for="cCat">Kategorija<select id="cCat"><option>Norises vieta</option><option>Ceremonija</option><option>Ēdināšana</option><option>Kūka un saldumi</option><option>Mūzika</option><option>Vakara vadītājs</option><option>Foto un video</option><option>Ziedi un noformējums</option><option>Tērpi</option><option>Frizieris un grims</option><option>Transports</option><option>Nakšņošana</option><option selected>Cits</option></select></label>
+      <label for="cName">Nosaukums<input id="cName" required placeholder="Piem., grupa “Laimas muzykanti”"></label>
+      <label for="cPerson">Kontaktpersona<input id="cPerson"></label>
+      <label for="cPhone">Tālrunis<input id="cPhone" type="tel" placeholder="+371 …"></label>
+      <label for="cEmail">E-pasts<input id="cEmail" type="email"></label>
+      <label style="justify-content:flex-end"><button class="primary" type="submit">Pievienot kontaktu</button></label>
+    </form>
+    <div class="toolbar"><input class="grow" id="cSearch" placeholder="Meklēt pēc nosaukuma, personas vai piezīmēm" aria-label="Meklēt kontaktus"></div>
+    <div id="contactList"><p class="empty">Ielādē…</p></div>
   </section>
 
   <!-- IELŪGUMS -->
