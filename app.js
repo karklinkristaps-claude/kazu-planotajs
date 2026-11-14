@@ -281,7 +281,7 @@
         if(onlyOpen && t.done) return;
         html += `<li class="task${t.done ? " checked" : ""}" data-id="${esc(t.id)}"><input type="checkbox" id="tk-${esc(t.id)}" data-f="done" ${t.done ? "checked" : ""}>
           <label for="tk-${esc(t.id)}"><span class="txt">${esc(t.text)}</span>${t.note ? `<span class="note">${esc(t.note)}</span>` : ""}</label>
-          <div class="tags">${t.custom ? '<span class="tag">Savs</span><button class="del" data-act="del">Dzēst</button>' : tagHtml(t.tags)}</div></li>`;
+          <div class="tags">${t.custom ? '<span class="tag">Savs</span>' : tagHtml(t.tags)}<button class="del" data-act="del" title="Dzēst uzdevumu">Dzēst</button></div></li>`;
       });
       html += `</ul><form class="addtask" data-phase="${p.id}"><input placeholder="Pievienot savu uzdevumu" aria-label="Pievienot uzdevumu posmā ${esc(p.name)}"><button type="submit">Pievienot</button></form></section>`;
     });
