@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="lv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Mūsu kāzu plānotājs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow column, sticky tab bar, sections as quiet panels; budget and guests are editable tables */
+:root{
+  --bg:#f3f5f2; --panel:#ffffff; --ink:#1e2b27; --muted:#5f6f69; --line:#d9e0dc;
+  --accent:#2f5d50; --accent-soft:#e3ece8; --gold:#a5812f; --gold-soft:#f4ecd9;
+  --ok:#2e7d4f; --ok-soft:#e1f1e7; --warn:#a4561c; --warn-soft:#f7e8dc; --bad:#a83a3a; --bad-soft:#f6e1e1;
+  --display:"Marcellus", Georgia, "Times New Roman", serif;
+  --body:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121816; --panel:#1a2320; --ink:#e4ebe8; --muted:#9aaba4; --line:#2c3935;
+  --accent:#7fb7a5; --accent-soft:#22332e; --gold:#d6b25f; --gold-soft:#332b19;
+  --ok:#6fcf97; --ok-soft:#1d3327; --warn:#e9a46b; --warn-soft:#3a2a1c; --bad:#ef8b8b; --bad-soft:#3a2222; color-scheme:dark}}
+/* */
+:root[data-theme="dark"]{
+  --bg:#121816; --panel:#1a2320; --ink:#e4ebe8; --muted:#9aaba4; --line:#2c3935;
+  --accent:#7fb7a5; --accent-soft:#22332e; --gold:#d6b25f; --gold-soft:#332b19;
+  --ok:#6fcf97; --ok-soft:#1d3327; --warn:#e9a46b; --warn-soft:#3a2a1c; --bad:#ef8b8b; --bad-soft:#3a2222; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto}
+header.top{padding-block:28px 12px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,5vw,40px);margin:0;line-height:1.1;text-wrap:balance}
+.route{color:var(--muted);margin:6px 0 0;font-size:14px}
+.route b{color:var(--ink);font-weight:600}
+.countdown{text-align:right}
+.countdown .n{font-family:var(--display);font-size:40px;line-height:1;color:var(--gold)}
+.countdown .l{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+nav.tabs a{padding:10px 14px;color:var(--muted);text-decoration:none;font-weight:600;border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs a[aria-current="page"]{color:var(--accent);border-color:var(--accent)}
+nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{margin-left:auto;align-self:center;font-size:12px;color:var(--muted);white-space:nowrap;padding-left:12px}
+.status.err{color:var(--bad)}
+section[hidden]{display:none}
+h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0 0 12px}
+h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:700}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .s{font-size:13px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--accent-soft);margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar i.over{background:var(--bad)}
+.block{margin-top:28px}
+.links{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.links a{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--ink);background:var(--panel)}
+.links a:hover{border-color:var(--accent)}
+.links a b{display:block;font-weight:600}
+.links a span{font-size:13px;color:var(--muted)}
+.form{display:grid;gap:10px 14px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0;width:100%}
+input[type=checkbox]{width:auto}
+td input,td select{background:transparent;border-color:transparent}
+td input:hover,td select:hover{border-color:var(--line)}
+td input:focus,td select:focus{background:var(--bg);border-color:var(--accent)}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;font-weight:600}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+button.icon{border:none;background:transparent;color:var(--muted);padding:4px 8px;font-size:18px;line-height:1}
+button.icon:hover{color:var(--bad)}
+.tablebox{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:4px 6px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:8px 6px;white-space:nowrap}
+td.num,th.num{text-align:right}
+td.num input{text-align:right}
+tr.cat td{background:var(--accent-soft);font-weight:700;padding:8px 10px}
+tr.cat td.num{padding-right:12px}
+tr.total td{font-weight:700;padding:8px 10px;border-bottom:none}
+tr.total.big td{font-size:16px;border-top:2px solid var(--ink)}
+.hint{font-size:12px;color:var(--muted)}
+.chip{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)} .chip.mut{background:var(--accent-soft);color:var(--muted)}
+.pos{color:var(--ok)} .neg{color:var(--bad)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.toolbar .grow{flex:1 1 160px}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+.notice{background:var(--gold-soft);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:16px}
+.login{max-width:380px;margin:12vh auto 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px;display:grid;gap:12px}
+.login h1{font-size:30px}
+.err{color:var(--bad);font-size:13px;min-height:1em}
+.userbar{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.addrow td{background:var(--bg)}
+.w-item{min-width:300px}.w-note{min-width:260px}.w-num{width:96px}.w-qty{width:110px}
+@media (max-width:560px){.countdown{text-align:left}.headright{justify-items:start!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>[hidden]{display:none!important} html{color-scheme:light dark} :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0}</style>
+</head>
+<body>
+<form class="login" id="loginForm" hidden>
+  <h1>Mūsu kāzas</h1>
+  <p class="hint" style="margin:0">Ienāc ar savu e-pastu un paroli.</p>
+  <label for="lEmail">E-pasts<input id="lEmail" type="email" autocomplete="username" required></label>
+  <label for="lPass">Parole<input id="lPass" type="password" autocomplete="current-password" required></label>
+  <button class="primary" type="submit" id="lBtn">Ienākt</button>
+  <div class="err" id="lErr"></div>
+</form>
+<div class="login" id="setup" hidden><h1>Gandrīz gatavs</h1><p>Failā <b>config.js</b> ieraksti savus Supabase datus (Project URL un anon atslēgu). Sīkāk README.md.</p></div>
+<div class="wrap" id="app" hidden>
+  <header class="top">
+    <div>
+      <h1 id="title">Mūsu kāzas</h1>
+      <p class="route"><b>Turaidas baznīca</b> → <b>Nītaures Dzirnavas</b> · <span id="dateText">datums vēl nav ievadīts</span></p>
+    </div>
+    <div class="headright" style="display:grid;gap:8px;justify-items:end"><div class="userbar"><span id="who"></span><button id="logout" type="button">Iziet</button></div><div class="countdown" id="countdown" hidden><div class="n" id="days">–</div><div class="l">dienas līdz kāzām</div></div></div>
+  </header>
+
+  <nav class="tabs" aria-label="Sadaļas">
+    <a href="#parskats" data-tab="parskats">Pārskats</a>
+    <a href="#budzets" data-tab="budzets">Budžets</a>
+    <a href="#viesi" data-tab="viesi">Viesi</a>
+    <span class="status" id="status">Ielādē…</span>
+  </nav>
+
+  
+
+  <!-- PĀRSKATS -->
+  <section id="parskats">
+    <div class="grid">
+      <div class="stat"><h3>Budžets</h3><div class="v" id="sPlanned">–</div><div class="s" id="sTarget">no mērķa</div><div class="bar"><i id="sBar" style="width:0"></i></div></div>
+      <div class="stat"><h3>Samaksāts</h3><div class="v" id="sPaid">–</div><div class="s" id="sLeft">atlikums</div></div>
+      <div class="stat"><h3>Viesi</h3><div class="v" id="sGuests">–</div><div class="s" id="sGuestsSub">apstiprinājuši</div></div>
+      <div class="stat"><h3>Uz vienu viesi</h3><div class="v" id="sPer">–</div><div class="s">plānotās izmaksas ar rezervi</div></div>
+    </div>
+
+    <div class="block">
+      <h3>Pārējie plāni</h3>
+      <div class="links">
+        <a href="https://claude.ai/artifact/8W7G3Fc3SxSkdqNX5uTrDX" target="_blank" rel="noopener"><b>Uzdevumu saraksts</b><span>~70 uzdevumi pa laika posmiem</span></a>
+        <a href="https://claude.ai/artifact/M6mTZERqFKncdYSJj3YcXE" target="_blank" rel="noopener"><b>Sēdvietu plāns</b><span>Serpentīna galdi, viesi pie galdiem</span></a>
+        <a href="https://claude.ai/artifact/6o1nKAUMYstnhDrh9ZTEE1" target="_blank" rel="noopener"><b>Dienas programma</b><span>No rīta līdz 03:00</span></a>
+        <a href="https://claude.ai/artifact/9WXfFHYVU2acVi5bZJTVxF" target="_blank" rel="noopener"><b>Ielūgumi</b><span>Ielūguma dizains</span></a>
+      </div>
+      <p class="hint">Šie plāni ir claude.ai lapas un atveras tikai tiem, kam tie kopīgoti.</p>
+    </div>
+
+    <div class="block">
+      <h3>Pamatdati</h3>
+      <form class="form" id="settingsForm" onsubmit="return false">
+        <label for="setNames">Virsraksts<input id="setNames" data-k="names" placeholder="Piem., Kristaps & …"></label>
+        <label for="setDate">Kāzu datums<input id="setDate" type="date" data-k="date"></label>
+        <label for="setGuests">Plānotais viesu skaits<input id="setGuests" type="number" min="0" step="1" data-k="guests"></label>
+        <label for="setTarget">Budžeta mērķis, €<input id="setTarget" type="number" min="0" step="100" data-k="target"></label>
+        <label for="setReserve">Rezerve, %<input id="setReserve" type="number" min="0" step="1" data-k="reserve" data-pct="1"></label>
+        <label for="setUplift">Ēdināšanas cenu pieaugums, %<input id="setUplift" type="number" min="0" step="1" data-k="uplift" data-pct="1"></label>
+      </form>
+      <p class="hint">Viesu skaits pārrēķina visas pozīcijas, kas ir “uz viesi”. Cenu pieaugums attiecas uz Nītaures Dzirnavu ēdināšanu (2026 → 2027).</p>
+    </div>
+  </section>
+
+  <!-- BUDŽETS -->
+  <section id="budzets" hidden>
+    <div class="toolbar">
+      <h2 class="grow" style="margin:0">Budžeta tāme</h2>
+      <span class="hint">Izmaiņas saglabājas uzreiz un ir redzamas abiem.</span>
+    </div>
+    <div class="tablebox">
+      <table id="budgetTable">
+        <thead><tr>
+          <th>Pozīcija</th><th class="num">Daudzums</th><th class="num">Cena €</th><th class="num">Plānots €</th>
+          <th class="num">Faktiski €</th><th class="num">Samaksāts €</th><th>Piezīmes</th><th></th>
+        </tr></thead>
+        <tbody id="budgetBody"><tr><td colspan="8" class="empty">Ielādē budžetu…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="hint">Daudzumā “uz viesi” nozīmē, ka tiek ņemts plānotais viesu skaits no Pārskata. ★ pie cenas nozīmē, ka tai pieskaitīts ēdināšanas cenu pieaugums.</p>
+  </section>
+
+  <!-- VIESI -->
+  <section id="viesi" hidden>
+    <div class="toolbar">
+      <h2 class="grow" style="margin:0">Viesu saraksts</h2>
+      <span id="guestChips"></span>
+    </div>
+    <form class="form" id="guestForm" style="margin-bottom:12px">
+      <label for="gName">Vārds, uzvārds<input id="gName" required placeholder="Piem., Anna Bērziņa"></label>
+      <label for="gSide">Puse<select id="gSide"><option>Līgavas</option><option>Līgavaiņa</option><option>Kopīgie</option></select></label>
+      <label for="gGroup">Grupa<input id="gGroup" placeholder="Ģimene, draugi, darbs…" list="groups"></label>
+      <label for="gCount">Personas<input id="gCount" type="number" min="1" step="1" value="1"></label>
+      <label style="justify-content:flex-end"><button class="primary" type="submit">Pievienot viesi</button></label>
+    </form>
+    <datalist id="groups"></datalist>
+    <div class="toolbar">
+      <input class="grow" id="gSearch" placeholder="Meklēt vārdu vai grupu" aria-label="Meklēt viesus">
+      <select id="gFilter" aria-label="Filtrēt pēc statusa" style="width:auto">
+        <option value="">Visi statusi</option><option>Nav ielūgts</option><option>Ielūgts</option><option>Apstiprināja</option><option>Atteica</option>
+      </select>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Vārds</th><th>Puse</th><th>Grupa</th><th class="num">Pers.</th><th>Statuss</th><th>Ēdiena piezīmes</th><th>Nakšņo</th><th>Piezīmes</th><th></th></tr></thead>
+        <tbody id="guestBody"><tr><td colspan="9" class="empty">Ielādē viesus…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
