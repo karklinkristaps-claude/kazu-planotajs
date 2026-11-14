@@ -4,34 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Mūsu kāzu plānotājs</title>
+<title>KK &amp; BK kāzas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Fraunces:wght@400;600&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Fraunces:wght@400;600&family=Nunito:wght@400;700;800&display=swap">
 <style>
 /* Layout: one narrow column, sticky tab bar, sections as quiet panels; budget and guests are editable tables */
 :root{
-  --bg:#f3f5f2; --panel:#ffffff; --ink:#1e2b27; --muted:#5f6f69; --line:#d9e0dc;
-  --accent:#2f5d50; --accent-soft:#e3ece8; --gold:#a5812f; --gold-soft:#f4ecd9;
-  --ok:#2e7d4f; --ok-soft:#e1f1e7; --warn:#a4561c; --warn-soft:#f7e8dc; --bad:#a83a3a; --bad-soft:#f6e1e1;
-  --display:"Marcellus", Georgia, "Times New Roman", serif;
+  /* Krāsas no kāzu noskaņu dēļa: navy, bordo, salvijzaļš, ziloņkauls, zelts */
+  --bg:#F5F0E6; --panel:#FFFDF8; --ink:#1B2A41; --muted:#5D6677; --line:#E3D9C6;
+  --accent:#6E1F2B; --accent-soft:#E6EADF; --gold:#A8843E; --gold-soft:#F2E8D2; --sage:#7D8F6E;
+  --ok:#55704F; --ok-soft:#E3EBDD; --warn:#9C5A22; --warn-soft:#F5E6D6; --bad:#8E2433; --bad-soft:#F4E0E2;
+  --display:"Cormorant Garamond", Georgia, "Times New Roman", serif;
   --body:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#121816; --panel:#1a2320; --ink:#e4ebe8; --muted:#9aaba4; --line:#2c3935;
-  --accent:#7fb7a5; --accent-soft:#22332e; --gold:#d6b25f; --gold-soft:#332b19;
-  --ok:#6fcf97; --ok-soft:#1d3327; --warn:#e9a46b; --warn-soft:#3a2a1c; --bad:#ef8b8b; --bad-soft:#3a2222; color-scheme:dark}}
-/* */
+  --bg:#121A28; --panel:#1A2436; --ink:#F1EBDD; --muted:#A8AFBC; --line:#2C3850;
+  --accent:#D2B378; --accent-soft:#25324A; --gold:#D2B378; --gold-soft:#2E2A22; --sage:#9DB08C;
+  --ok:#A3BD92; --ok-soft:#24332A; --warn:#E3A86E; --warn-soft:#3A2B1D; --bad:#E58A97; --bad-soft:#3D1F27; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#121816; --panel:#1a2320; --ink:#e4ebe8; --muted:#9aaba4; --line:#2c3935;
-  --accent:#7fb7a5; --accent-soft:#22332e; --gold:#d6b25f; --gold-soft:#332b19;
-  --ok:#6fcf97; --ok-soft:#1d3327; --warn:#e9a46b; --warn-soft:#3a2a1c; --bad:#ef8b8b; --bad-soft:#3a2222; color-scheme:dark}
+  --bg:#121A28; --panel:#1A2436; --ink:#F1EBDD; --muted:#A8AFBC; --line:#2C3850;
+  --accent:#D2B378; --accent-soft:#25324A; --gold:#D2B378; --gold-soft:#2E2A22; --sage:#9DB08C;
+  --ok:#A3BD92; --ok-soft:#24332A; --warn:#E3A86E; --warn-soft:#3A2B1D; --bad:#E58A97; --bad-soft:#3D1F27; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 .wrap{max-width:1240px;margin:0 auto}
 header.top{padding-block:28px 12px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,5vw,40px);margin:0;line-height:1.1;text-wrap:balance}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(28px,5vw,40px);margin:0;line-height:1.1;text-wrap:balance}
 .route{color:var(--muted);margin:6px 0 0;font-size:14px}
 .route b{color:var(--ink);font-weight:600}
 .countdown{text-align:right}
@@ -101,6 +101,21 @@ td.num{white-space:nowrap;padding-top:10px}
 textarea{font:inherit;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:6px;padding:6px 8px;width:100%;min-width:0;resize:none;overflow:hidden;line-height:1.4;display:block}
 textarea:hover{border-color:var(--line)} textarea:focus{background:var(--bg);border-color:var(--accent);outline:none}
 td{vertical-align:top} td.num,td .icon{vertical-align:top}.w-num{width:96px}.w-qty{width:110px}
+
+/* monogramma */
+.mono{--mono-bg:var(--bg);display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:22px;color:var(--ink)}
+.mono svg{width:120px;height:auto;display:block}
+.mono .ini{font-family:var(--display);font-weight:600;font-size:30px;letter-spacing:.14em;line-height:1}
+.mono .ini i{font-style:italic;font-weight:500;color:var(--gold);letter-spacing:0;margin:0 .18em}
+.mono .orn{display:flex;align-items:center;gap:10px;margin-top:6px;color:var(--gold)}
+.mono .orn::before,.mono .orn::after{content:"";width:56px;height:1px;background:currentColor;opacity:.7}
+.mono .orn span{width:6px;height:6px;transform:rotate(45deg);border:1px solid currentColor}
+.login .mono{--mono-bg:var(--panel);padding-top:0;margin-bottom:6px}
+.login h1{text-align:center}
+h2,.ph{font-weight:600}
+nav.tabs a[aria-current="page"]{color:var(--accent);border-color:var(--gold)}
+.stat h3,th{color:var(--sage)}
+.countdown .n{font-weight:600}
 @media (max-width:700px){
   nav.tabs{flex-wrap:wrap;gap:0;overflow:visible;position:static}
   nav.tabs a{padding:8px 10px;font-size:14px}
@@ -222,6 +237,18 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
 </head>
 <body>
 <form class="login" id="loginForm" hidden>
+  <div class="mono" role="img" aria-label="KK un BK">
+    <svg viewBox="0 0 112 72" aria-hidden="true">
+      <defs><linearGradient id="gold2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E9D29A"/><stop offset=".5" stop-color="#B58C42"/><stop offset="1" stop-color="#8A6A2E"/></linearGradient></defs>
+      <circle cx="44" cy="40" r="22" fill="none" stroke="url(#gold2)" stroke-width="5"/>
+      <circle cx="68" cy="40" r="22" fill="none" stroke="url(#gold2)" stroke-width="5"/>
+      <path d="M49.69 18.75 A22 22 0 0 1 60.85 25.86" fill="none" stroke="var(--mono-bg)" stroke-width="9"/>
+      <path d="M49.69 18.75 A22 22 0 0 1 60.85 25.86" fill="none" stroke="url(#gold2)" stroke-width="5"/>
+      <path d="M68 13 l4 -5 l4 5 l-4 4 z" fill="#F4EEDC" stroke="#B58C42" stroke-width="1"/>
+    </svg>
+    <div class="ini">KK<i>&amp;</i>BK</div>
+    <div class="orn"><span></span></div>
+  </div>
   <h1>Mūsu kāzas</h1>
   <p class="hint" style="margin:0">Ienāc ar savu e-pastu un paroli.</p>
   <label for="lEmail">E-pasts<input id="lEmail" type="email" autocomplete="username" required></label>
@@ -231,6 +258,18 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
 </form>
 <div class="login" id="setup" hidden><h1>Gandrīz gatavs</h1><p>Failā <b>config.js</b> ieraksti savus Supabase datus (Project URL un anon atslēgu). Sīkāk README.md.</p></div>
 <div class="wrap" id="app" hidden>
+  <div class="mono" role="img" aria-label="KK un BK">
+    <svg viewBox="0 0 112 72" aria-hidden="true">
+      <defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E9D29A"/><stop offset=".5" stop-color="#B58C42"/><stop offset="1" stop-color="#8A6A2E"/></linearGradient></defs>
+      <circle cx="44" cy="40" r="22" fill="none" stroke="url(#gold)" stroke-width="5"/>
+      <circle cx="68" cy="40" r="22" fill="none" stroke="url(#gold)" stroke-width="5"/>
+      <path d="M49.69 18.75 A22 22 0 0 1 60.85 25.86" fill="none" stroke="var(--mono-bg)" stroke-width="9"/>
+      <path d="M49.69 18.75 A22 22 0 0 1 60.85 25.86" fill="none" stroke="url(#gold)" stroke-width="5"/>
+      <path d="M68 13 l4 -5 l4 5 l-4 4 z" fill="#F4EEDC" stroke="#B58C42" stroke-width="1"/>
+    </svg>
+    <div class="ini">KK<i>&amp;</i>BK</div>
+    <div class="orn"><span></span></div>
+  </div>
   <header class="top">
     <div>
       <h1 id="title">Mūsu kāzas</h1>
