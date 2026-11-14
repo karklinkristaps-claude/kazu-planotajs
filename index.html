@@ -29,7 +29,7 @@
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.wrap{max-width:1040px;margin:0 auto}
+.wrap{max-width:1240px;margin:0 auto}
 header.top{padding-block:28px 12px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,5vw,40px);margin:0;line-height:1.1;text-wrap:balance}
 .route{color:var(--muted);margin:6px 0 0;font-size:14px}
@@ -94,7 +94,11 @@ tr.total.big td{font-size:16px;border-top:2px solid var(--ink)}
 .err{color:var(--bad);font-size:13px;min-height:1em}
 .userbar{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
 .addrow td{background:var(--bg)}
-.w-item{min-width:300px}.w-note{min-width:260px}.w-num{width:96px}.w-qty{width:110px}
+.w-item{min-width:220px}.w-note{min-width:240px}
+td.num{white-space:nowrap;padding-top:10px}
+textarea{font:inherit;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:6px;padding:6px 8px;width:100%;min-width:0;resize:none;overflow:hidden;line-height:1.4;display:block}
+textarea:hover{border-color:var(--line)} textarea:focus{background:var(--bg);border-color:var(--accent);outline:none}
+td{vertical-align:top} td.num,td .icon{vertical-align:top}.w-num{width:96px}.w-qty{width:110px}
 @media (max-width:560px){.countdown{text-align:left}.headright{justify-items:start!important}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>

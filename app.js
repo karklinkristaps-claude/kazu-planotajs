@@ -17,7 +17,7 @@
   const TABS = ["parskats","budzets","viesi"];
   function showTab(){
     const t = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "parskats";
-    TABS.forEach(id => { $("#"+id).hidden = id !== t; });
+    TABS.forEach(id => { $("#"+id).hidden = id !== t; }); setTimeout(() => autosize($("#"+t)), 0);
     document.querySelectorAll("nav.tabs a").forEach(a => { if(a.dataset.tab === t) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
   }
   window.addEventListener("hashchange", showTab); showTab();
@@ -90,13 +90,13 @@
       rows.forEach(r => {
         const act = r.actual == null || r.actual === "" ? "" : r.actual;
         html += `<tr data-id="${esc(r.id)}">
-          <td><input class="w-item" data-f="item" value="${esc(r.item)}" aria-label="Pozīcija"></td>
+          <td><textarea class="w-item grow" rows="1" data-f="item" aria-label="Pozīcija">${esc(r.item)}</textarea></td>
           <td class="num">${r.perGuest ? `<button class="icon" style="font-size:13px;color:var(--accent)" data-act="qty" title="Nospied, lai ievadītu skaitu">uz viesi (${num(settings.guests)})</button>` : `<input class="w-num" type="number" step="1" min="0" data-f="qty" value="${esc(r.qty)}" aria-label="Daudzums">`}</td>
           <td class="num"><input class="w-num" type="number" step="0.01" min="0" data-f="price" value="${esc(r.price)}" aria-label="Cena">${r.uplift?'<span class="hint" title="Pieskaitīts cenu pieaugums">★</span>':""}</td>
           <td class="num">${eur(planned(r))}</td>
           <td class="num"><input class="w-num" type="number" step="0.01" min="0" data-f="actual" value="${esc(act)}" placeholder="–" aria-label="Faktiski"></td>
           <td class="num"><input class="w-num" type="number" step="0.01" min="0" data-f="paid" value="${num(r.paid)||""}" placeholder="0" aria-label="Samaksāts"></td>
-          <td><input class="w-note" data-f="note" value="${esc(r.note)}" title="${esc(r.range ? "Tipiski LV: " + r.range : "")}" aria-label="Piezīmes"></td>
+          <td><textarea class="w-note grow" rows="1" data-f="note" aria-label="Piezīmes">${esc(r.note)}</textarea>${r.range ? `<div class="hint">Tipiski LV: ${esc(r.range)}</div>` : ""}</td>
           <td><button class="icon" data-act="del" title="Dzēst pozīciju" aria-label="Dzēst">×</button></td></tr>`;
       });
       html += `<tr class="addrow"><td colspan="8"><button data-act="add" data-cat="${esc(cat)}">+ Pievienot pozīciju</button></td></tr>`;
@@ -105,7 +105,7 @@
     html += `<tr class="total"><td colspan="3">Starpsumma</td><td class="num">${eur(t.p)}</td><td class="num">${eur(t.a)}</td><td class="num">${eur(t.paid)}</td><td colspan="2"></td></tr>
       <tr class="total"><td colspan="3">Rezerve (${Math.round(num(settings.reserve)*100)}%)</td><td class="num">${eur(t.reserve)}</td><td colspan="4"></td></tr>
       <tr class="total big"><td colspan="3">KOPĀ</td><td class="num">${eur(t.total)}</td><td colspan="4" class="${diff>=0?"pos":"neg"}">${diff>=0 ? eur(diff)+" zem mērķa" : eur(-diff)+" virs mērķa"} (${eur(target)})</td></tr>`;
-    body.innerHTML = html;
+    body.innerHTML = html; autosize(body);
   }
   $("#budgetBody").addEventListener("change", e => {
     const inp = e.target, tr = inp.closest("tr[data-id]"); if(!tr || !inp.dataset.f || !db) return;
@@ -159,8 +159,9 @@
       <td><select data-f="status" aria-label="Statuss">${opt(STATUSES, g.status || "Nav ielūgts")}</select></td>
       <td><input data-f="diet" value="${esc(g.diet)}" placeholder="–" style="min-width:120px" aria-label="Ēdiena piezīmes"></td>
       <td><input data-f="stay" type="checkbox" ${g.stay?"checked":""} aria-label="Nakšņo"></td>
-      <td><input data-f="note" value="${esc(g.note)}" style="min-width:140px" aria-label="Piezīmes"></td>
+      <td><textarea class="grow" rows="1" data-f="note" style="min-width:180px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
       <td><button class="icon" data-act="del" title="Dzēst viesi" aria-label="Dzēst">×</button></td></tr>`).join("");
+    autosize($("#guestBody"));
   }
   $("#gSearch").addEventListener("input", renderGuests);
   $("#gFilter").addEventListener("change", renderGuests);
@@ -186,13 +187,16 @@
   });
 
   // ---------- keep typing safe while live updates arrive ----------
-  function isEditing(sel){ const a = document.activeElement; return a && a.matches("input:not([type=checkbox]),select") && a.closest(sel); }
+  function isEditing(sel){ const a = document.activeElement; return a && a.matches("input:not([type=checkbox]),select,textarea") && a.closest(sel); }
   document.addEventListener("focusout", () => setTimeout(() => {
     if(pending.budget && !isEditing("#budgetBody")){ pending.budget = false; renderBudget(); }
     if(pending.guests && !isEditing("#guestBody")){ pending.guests = false; renderGuests(); }
     renderOverview();
   }, 0));
 
+  function autosize(root){ root.querySelectorAll("textarea.grow").forEach(t => { t.style.height = "auto"; if(t.scrollHeight) t.style.height = t.scrollHeight + "px"; }); }
+  document.addEventListener("input", e => { if(e.target.matches && e.target.matches("textarea.grow")){ e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; } });
+  document.addEventListener("keydown", e => { if(e.key === "Enter" && !e.shiftKey && e.target.matches && e.target.matches("textarea.grow")){ e.preventDefault(); e.target.blur(); } });
   function renderAll(){ renderOverview(); renderBudget(); renderGuests(); }
 
   // ---------- Supabase ----------
