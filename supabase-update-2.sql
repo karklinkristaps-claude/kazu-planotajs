@@ -1,5 +1,5 @@
 -- Kāzu plānotājs, 2. atjauninājums: uzdevumi, sēdvietas, programma, tradīcijas, ielūgums.
--- Palaid VIENREIZ: Supabase → SQL Editor → New query → iekopē visu → Run.
+-- Palaid Supabase → SQL Editor → New query → iekopē visu → Run. Var droši palaist arī atkārtoti.
 
 -- 1) Jaunas tabulas
 create table if not exists public.plan_tasks (
@@ -56,13 +56,25 @@ alter table public.plan_tasks      enable row level security;
 alter table public.plan_tables     enable row level security;
 alter table public.plan_program    enable row level security;
 alter table public.plan_traditions enable row level security;
+drop policy if exists "pāris drīkst visu" on public.plan_tasks;
 create policy "pāris drīkst visu" on public.plan_tasks      for all to authenticated using (true) with check (true);
+drop policy if exists "pāris drīkst visu" on public.plan_tables;
 create policy "pāris drīkst visu" on public.plan_tables     for all to authenticated using (true) with check (true);
+drop policy if exists "pāris drīkst visu" on public.plan_program;
 create policy "pāris drīkst visu" on public.plan_program    for all to authenticated using (true) with check (true);
+drop policy if exists "pāris drīkst visu" on public.plan_traditions;
 create policy "pāris drīkst visu" on public.plan_traditions for all to authenticated using (true) with check (true);
 
 -- 4) Tiešraides atjaunināšana
-alter publication supabase_realtime add table public.plan_tasks, public.plan_tables, public.plan_program, public.plan_traditions;
+do $$
+declare t text;
+begin
+  foreach t in array array['plan_tasks','plan_tables','plan_program','plan_traditions'] loop
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end $$;
 
 -- 5) Datums no uzdevumu saraksta (ja vēl nav ievadīts)
 -- budžeta sadaļas (var pievienot un dzēst lapā); Nakšņošana un Medusmēnesis noņemti
@@ -72,8 +84,9 @@ delete from public.plan_budget where cat in ('Nakšņošana', 'Medusmēnesis');
 
 update public.plan_settings set wedding_date = '2027-08-11' where id = 1 and wedding_date is null;
 
--- 6) Sākuma dati
-insert into public.plan_tasks (phase, text, note, tags, sort) values
+-- 6) Sākuma dati (tikai ja tabulas vēl tukšas; failu var droši palaist atkārtoti)
+insert into public.plan_tasks (phase, text, note, tags, sort)
+select * from (values
 ('p1', 'Vienojieties par kopējo budžetu un to, kas maksā par ko', '', 'b', 1),
 ('p1', 'Izveidojiet budžeta tabulu ar 10% rezervi neparedzētiem izdevumiem', '', 'b', 2),
 ('p1', 'Nosakiet aptuveno viesu skaitu', 'No tā atkarīga zāle, ēdināšana un liela daļa budžeta.', 'g', 3),
@@ -141,15 +154,21 @@ insert into public.plan_tasks (phase, text, note, tags, sort) values
 ('p9', 'Kleitas un uzvalka tīrīšana', '', 'a', 4),
 ('p9', 'Atsauksmes pakalpojumu sniedzējiem', '', 'v', 5),
 ('p9', 'Saņemiet foto un video, izveidojiet albumu', '', 'v', 6),
-('p9', 'Noslēdziet budžetu', '', 'b', 7);
+('p9', 'Noslēdziet budžetu', '', 'b', 7)
+) as v(phase, text, note, tags, sort)
+where not exists (select 1 from public.plan_tasks);
 
-insert into public.plan_tables (name, shape, seats, sort) values
+insert into public.plan_tables (name, shape, seats, sort)
+select * from (values
 ('Galvenais galds', 'taisnstūra', 6, 0),
 ('1. serpentīns', 'serpentīns', 20, 1),
 ('2. serpentīns', 'serpentīns', 20, 2),
-('3. serpentīns', 'serpentīns', 20, 3);
+('3. serpentīns', 'serpentīns', 20, 3)
+) as v(name, shape, seats, sort)
+where not exists (select 1 from public.plan_tables);
 
-insert into public.plan_program (section, time, what, place, who, sort) values
+insert into public.plan_program (section, time, what, place, who, sort)
+select * from (values
 ('Rīts: sagatavošanās', '08:00', 'Brokastis līgavai un līgavainim (katram savā vietā)', 'Mājās / naktsmītnē', '', 1),
 ('Rīts: sagatavošanās', '08:30', 'Frizēšana un grims līgavai un viņas māsai/draudzenēm', 'Līgavas sagatavošanās vieta', 'Frizētava, vizažiste', 2),
 ('Rīts: sagatavošanās', '10:00', 'Ziedi piegādāti: pušķis, piespraudes, baznīcas rotājumi', 'Līgavas vieta, baznīca', 'Florists', 3),
@@ -181,9 +200,12 @@ insert into public.plan_program (section, time, what, place, who, sort) values
 ('Vakara beigas un nākamā diena', '00:30', 'Pūra lāde, dejas turpinās', 'Nītaures Dzirnavas', '', 29),
 ('Vakara beigas un nākamā diena', '02:00', 'Pēdējā dziesma, transports viesiem uz mājām vai naktsmītnēm', '', 'Vīdu bārs', 30),
 ('Vakara beigas un nākamā diena', '03:00', 'Svinību beigas', '', 'Vietas administrators', 31),
-('Vakara beigas un nākamā diena', 'Nākamā diena, 12:00', 'Brančs vai “otrā diena” ar tuvākajiem, pirts', '', '', 32);
+('Vakara beigas un nākamā diena', 'Nākamā diena, 12:00', 'Brančs vai “otrā diena” ar tuvākajiem, pirts', '', '', 32)
+) as v(section, time, what, place, who, sort)
+where not exists (select 1 from public.plan_program);
 
-insert into public.plan_traditions (name, what, when_text, sort) values
+insert into public.plan_traditions (name, what, when_text, sort)
+select * from (values
 ('Līgavas izpirkšana', 'Līgavainis “izpērk” līgavu no viņas ģimenes un draugiem ar uzdevumiem', 'Rītā, ap 13:00', 1),
 ('Tilti un slēdzene', 'Pāris pārnes vai pārved līgavu pār tiltiem, pieslēdz slēdzeni un izmet atslēgu', 'Ceļā uz Nītauri', 2),
 ('Šķēršļi ceļā', 'Draugi vai kaimiņi aizsprosto ceļu, vīdu bārs izpērk ceļu', 'Ceļā uz Nītauri', 3),
@@ -192,4 +214,6 @@ insert into public.plan_traditions (name, what, when_text, sort) values
 ('Līgavas zagšana', 'Viesi “nozog” līgavu, līgavainis un vīdu bārs izpērk', '21:30', 6),
 ('Mičošana', 'Līgavai noņem plīvuru un uzliek miču vai lakatu, līgavainim cepuri; viesi dzied', '00:00', 7),
 ('Pušķa un plīvura nodošana', 'Līgava nodod pušķi neprecētām meitām', 'Mičošanā', 8),
-('Pūra lāde', 'Līgava dāvina dāvanas līgavaiņa ģimenei', 'Pēc mičošanas', 9);
+('Pūra lāde', 'Līgava dāvina dāvanas līgavaiņa ģimenei', 'Pēc mičošanas', 9)
+) as v(name, what, when_text, sort)
+where not exists (select 1 from public.plan_traditions);
