@@ -154,10 +154,10 @@
     const opt = (arr, v) => arr.map(o => `<option${o===v?" selected":""}>${o}</option>`).join("");
     $("#guestBody").innerHTML = list.map(g => `<tr data-id="${esc(g.id)}">
       <td><input data-f="name" value="${esc(g.name)}" style="min-width:160px" aria-label="Vārds"></td>
-      <td><select data-f="side" aria-label="Puse">${opt(["Līgavas","Līgavaiņa","Kopīgie"], g.side)}</select></td>
+      <td><select data-f="side" style="min-width:130px" aria-label="Puse">${opt(["Līgavas","Līgavaiņa","Kopīgie"], g.side)}</select></td>
       <td><input data-f="group" value="${esc(g.group)}" list="groups" style="min-width:110px" aria-label="Grupa"></td>
       <td class="num"><input data-f="count" type="number" min="1" step="1" value="${esc(g.count||1)}" style="width:60px" aria-label="Personas"></td>
-      <td><select data-f="status" aria-label="Statuss">${opt(STATUSES, g.status || "Nav ielūgts")}</select></td>
+      <td><select data-f="status" style="min-width:160px" aria-label="Statuss">${opt(STATUSES, g.status || "Nav ielūgts")}</select></td>
       <td><input data-f="diet" value="${esc(g.diet)}" placeholder="–" style="min-width:120px" aria-label="Ēdiena piezīmes"></td>
       <td><input data-f="stay" type="checkbox" ${g.stay?"checked":""} aria-label="Nakšņo"></td>
       <td><textarea class="grow" rows="1" data-f="note" style="min-width:180px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
