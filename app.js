@@ -7,6 +7,7 @@
 
   const CATS = ["Norises vieta","Ēdināšana","Dzērieni","Tērpi un stils","Gredzeni","Foto un video","Mūzika un izklaide","Noformējums un ziedi","Ceremonija: Turaidas baznīca","Transports","Ielūgumi un drukas darbi","Citi"];
   const STATUSES = ["Nav ielūgts","Ielūgts","Apstiprināja","Atteica"];
+  const GROUPS = ["Ģimene","Draugi","Kolēģi","Cits"];
   const DEFAULTS = {names:"Mūsu kāzas", date:"", guests:80, target:35000, reserve:0.1, uplift:0.15};
 
   let sb = null, db = true, settings = {...DEFAULTS}, budget = [], guests = [];
@@ -190,6 +191,8 @@
     if(!guests.length){ $("#guestBody").innerHTML = `<tr><td colspan="10" class="empty">Sarakstā vēl nav neviena viesa. Pievieno pirmo ar formu augstāk.</td></tr>`; return; }
     if(!list.length){ $("#guestBody").innerHTML = `<tr><td colspan="10" class="empty">Neviens viesis neatbilst meklēšanai.</td></tr>`; return; }
     const opt = (arr, v) => arr.map(o => `<option${o===v?" selected":""}>${o}</option>`).join("");
+    // vecas brīvi ierakstītas grupas (piem., "Darbs") paliek redzamas, līdz tās nomaina
+    const grpOpts = v => (!v ? '<option value="" selected>—</option>' : "") + (v && !GROUPS.includes(v) ? `<option selected>${esc(v)}</option>` : "") + opt(GROUPS, v);
     const hasSit = guests.some(g => "sit_with" in g) || "inv_style" in settings;
     const byName = [...guests].sort((a,b) => (a.name||"").localeCompare(b.name||"","lv"));
     const sitSel = g => hasSit
@@ -198,7 +201,7 @@
     $("#guestBody").innerHTML = list.map(g => `<tr data-id="${esc(g.id)}">
       <td><input data-f="name" value="${esc(g.name)}" style="min-width:160px" aria-label="Vārds"></td>
       <td><select data-f="side" style="min-width:130px" aria-label="Puse">${opt(["Līgavas","Līgavaiņa","Kopīgie"], g.side)}</select></td>
-      <td><input data-f="group" value="${esc(g.group)}" list="groups" style="min-width:110px" aria-label="Grupa"></td>
+      <td><select data-f="group" style="min-width:110px" aria-label="Grupa">${grpOpts(g.group)}</select></td>
       <td class="num"><input data-f="count" type="number" min="1" step="1" value="${esc(g.count||1)}" style="width:60px" aria-label="Personas"></td>
       <td><select data-f="status" style="min-width:160px" aria-label="Statuss">${opt(STATUSES, g.status || "Nav ielūgts")}</select></td>
       <td><input data-f="diet" value="${esc(g.diet)}" placeholder="–" style="min-width:100px" aria-label="Ēdiena piezīmes"></td>
@@ -213,7 +216,7 @@
   $("#guestForm").addEventListener("submit", e => {
     e.preventDefault(); if(!db) return;
     const name = $("#gName").value.trim(); if(!name) return;
-    const row = {name, side:$("#gSide").value, grp:$("#gGroup").value.trim(), count:Math.max(1, num($("#gCount").value)||1), status:"Nav ielūgts", diet:"", stay:false, note:""};
+    const row = {name, side:$("#gSide").value, grp:$("#gGroup").value, count:Math.max(1, num($("#gCount").value)||1), status:"Nav ielūgts", diet:"", stay:false, note:""};
     const sitId = $("#gSit").value || null;
     $("#gName").value = ""; $("#gCount").value = 1; $("#gSit").value = ""; $("#gName").focus();
     if(!sitId){ save(sb.from("plan_guests").insert(row)); return; }
