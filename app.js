@@ -111,7 +111,7 @@
           <td><textarea class="w-item grow" rows="1" data-f="item" aria-label="Pozīcija">${esc(r.item)}</textarea></td>
           <td class="num">${r.perGuest ? `<button class="icon" style="font-size:13px;color:var(--accent)" data-act="qty" title="Nospied, lai ievadītu skaitu">uz viesi (${num(settings.guests)})</button>` : `<input class="w-num" type="number" step="1" min="0" data-f="qty" value="${esc(r.qty)}" aria-label="Daudzums">`}</td>
           <td class="num"><input class="w-num" type="number" step="0.01" min="0" data-f="price" value="${esc(r.price)}" aria-label="Cena">${r.uplift?'<span class="hint" title="Pieskaitīts cenu pieaugums">★</span>':""}</td>
-          <td class="num">${eur(planned(r))}</td>
+          <td class="num"><input class="w-num planned" type="number" step="1" min="0" data-f="planned" value="${Math.round(planned(r))}" title="Var ierakstīt summu, cena tiks pārrēķināta" aria-label="Plānots"></td>
           <td class="num"><input class="w-num" type="number" step="0.01" min="0" data-f="actual" value="${esc(act)}" placeholder="–" aria-label="Faktiski"></td>
           <td class="num"><input class="w-num" type="number" step="0.01" min="0" data-f="paid" value="${num(r.paid)||""}" placeholder="0" aria-label="Samaksāts"></td>
           <td><textarea class="w-note grow" rows="1" data-f="note" aria-label="Piezīmes">${esc(r.note)}</textarea>${r.range ? `<div class="hint">Tipiski LV: ${esc(r.range)}</div>` : ""}</td>
@@ -122,14 +122,25 @@
     const t = totals(), target = num(settings.target), diff = target - t.total;
     html += `<tr class="total"><td colspan="3">Starpsumma</td><td class="num">${eur(t.p)}</td><td class="num">${eur(t.a)}</td><td class="num">${eur(t.paid)}</td><td colspan="2"></td></tr>
       <tr class="total"><td colspan="3">Rezerve (${Math.round(num(settings.reserve)*100)}%)</td><td class="num">${eur(t.reserve)}</td><td colspan="4"></td></tr>
-      <tr class="total big"><td colspan="3">KOPĀ</td><td class="num">${eur(t.total)}</td><td colspan="4" class="${diff>=0?"pos":"neg"}">${diff>=0 ? eur(diff)+" zem mērķa" : eur(-diff)+" virs mērķa"} (${eur(target)})</td></tr>`;
+      <tr class="total big"><td colspan="3">KOPĀ</td><td class="num">${eur(t.total)}</td><td colspan="4" class="${diff>=0?"pos":"neg"}">${diff>=0 ? eur(diff)+" zem mērķa" : eur(-diff)+" virs mērķa"} · mērķis <input class="w-num" type="number" step="100" min="0" data-target="1" value="${num(settings.target)}" aria-label="Budžeta mērķis"> €</td></tr>`;
     body.innerHTML = html; labelCells($("#budgetTable")); autosize(body);
   }
   function askDel(msg){ return window.confirm(msg + "\n\nŠo nevarēs atsaukt."); }
   $("#budgetBody").addEventListener("change", e => {
+    const inp0 = e.target;
+    if(inp0.dataset.target && db){ settings.target = num(inp0.value); renderAll(); save(sb.from("plan_settings").upsert(settingsRow())); return; }
     const inp = e.target, tr = inp.closest("tr[data-id]"); if(!tr || !inp.dataset.f || !db) return;
     const r = budget.find(x => x.id === tr.dataset.id); if(!r) return;
     const f = inp.dataset.f;
+    if(f === "planned"){
+      // ierakstīta plānotā summa: pārrēķina vienības cenu
+      const want = num(inp.value), factor = r.uplift ? 1 + num(settings.uplift) : 1;
+      let q = r.perGuest ? num(settings.guests) : num(r.qty), upd = {};
+      if(!q){ q = 1; if(!r.perGuest){ r.qty = 1; upd.qty = 1; } }
+      r.price = Math.round(want / (q * factor) * 100) / 100; upd.price = r.price;
+      pending.budget = false; renderBudget(); renderOverview();
+      save(sb.from("plan_budget").update(upd).eq("id", r.id)); return;
+    }
     let v = inp.value;
     if(["qty","price","paid"].includes(f)) v = num(v);
     if(f === "actual") v = v === "" ? null : num(v);
