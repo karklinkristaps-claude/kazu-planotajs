@@ -77,6 +77,16 @@
   });
 
   // ---------- budget ----------
+  // telefonā tabulas rāda kā kartītes: katrai šūnai paraksts no tabulas galvas
+  function labelCells(root){
+    (root.matches("table") ? [root] : root.querySelectorAll("table")).forEach(tb => {
+      const ths = [...tb.querySelectorAll("thead th")].map(th => th.textContent.trim());
+      tb.querySelectorAll("tbody tr[data-id]").forEach(tr => {
+        const tds = tr.children; if(tds.length !== ths.length) return;
+        [...tds].forEach((td, i) => { if(ths[i]) td.dataset.label = ths[i]; if(td.querySelector("textarea")) td.classList.add("wide"); });
+      });
+    });
+  }
   function budgetCats(){
     const base = Array.isArray(settings.budget_cats) ? settings.budget_cats : CATS;
     return [...base, ...[...new Set(budget.map(r => r.cat))].filter(c => c && !base.includes(c))];
@@ -109,7 +119,7 @@
     html += `<tr class="total"><td colspan="3">Starpsumma</td><td class="num">${eur(t.p)}</td><td class="num">${eur(t.a)}</td><td class="num">${eur(t.paid)}</td><td colspan="2"></td></tr>
       <tr class="total"><td colspan="3">Rezerve (${Math.round(num(settings.reserve)*100)}%)</td><td class="num">${eur(t.reserve)}</td><td colspan="4"></td></tr>
       <tr class="total big"><td colspan="3">KOPĀ</td><td class="num">${eur(t.total)}</td><td colspan="4" class="${diff>=0?"pos":"neg"}">${diff>=0 ? eur(diff)+" zem mērķa" : eur(-diff)+" virs mērķa"} (${eur(target)})</td></tr>`;
-    body.innerHTML = html; autosize(body);
+    body.innerHTML = html; labelCells($("#budgetTable")); autosize(body);
   }
   function askDel(msg){ return window.confirm(msg + "\n\nŠo nevarēs atsaukt."); }
   $("#budgetBody").addEventListener("change", e => {
@@ -190,7 +200,7 @@
       <td>${sitSel(g)}</td>
       <td><textarea class="grow" rows="1" data-f="note" style="min-width:180px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
       <td><button class="del" data-act="del" title="Dzēst viesi">Dzēst</button></td></tr>`).join("");
-    autosize($("#guestBody"));
+    labelCells($("#viesi")); autosize($("#guestBody"));
   }
   $("#gSearch").addEventListener("input", renderGuests);
   $("#gFilter").addEventListener("change", renderGuests);
@@ -388,7 +398,7 @@
       $("#tradList").innerHTML = `<div class="tablebox"><table><thead><tr><th>Tradīcija</th><th>Kas notiek</th><th>Kad</th><th>Gribam?</th></tr></thead><tbody>${rows.map(r => `<tr data-id="${esc(r.id)}"><td><b>${esc(r.name)}</b></td><td>${esc(r.what)}</td><td><input data-f="when_text" value="${esc(r.when_text)}" style="width:130px" aria-label="Kad"></td>
         <td><select data-f="want" class="want ${r.want === "Jā" ? "yes" : r.want === "Nē" ? "no" : ""}" aria-label="Gribam?">${["","Jā","Varbūt","Nē"].map(o => `<option value="${o}"${o === (r.want || "") ? " selected" : ""}>${o || "—"}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div>`;
     }
-    autosize($("#programList"));
+    labelCells($("#programma")); autosize($("#programList"));
   }
   $("#programList").addEventListener("change", e => {
     const inp = e.target, tr = inp.closest("tr[data-id]"); if(!tr || !inp.dataset.f) return;
