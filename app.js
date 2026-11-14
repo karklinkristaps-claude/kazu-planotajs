@@ -260,6 +260,7 @@
 
 
   function renderTasks(){
+    $("#taskProgress").hidden = missing.tasks;
     if(missing.tasks){ needsUpdate("#taskList", "uzdevumus"); return; }
     if(isEditing("#taskList")){ pending.tasks = true; return; }
     const done = tasks.filter(t => t.done).length, all = tasks.length, pct = all ? Math.round(done / all * 100) : 0;
