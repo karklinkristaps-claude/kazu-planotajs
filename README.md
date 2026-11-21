@@ -20,6 +20,7 @@ Telefonā lapu var pievienot sākuma ekrānam (Safari: Kopīgot → Pievienot s�
 - `index.html`, `app.js` — pati lapa
 - `config.js` — tavi Supabase dati
 - `supabase-setup.sql` — tabulas, piekļuve un sākuma dati
+- `supabase-update-2.sql`, `supabase-update-3.sql`, `supabase-update-4.sql` — vēlāki atjauninājumi; katru vienreiz palaiž Supabase SQL Editor (var arī atkārtoti)
 
 ## Ja kaut kas nestrādā
 - **“Nepareizs e-pasts vai parole”**: pārbaudi, vai lietotājs izveidots ar Auto Confirm.
