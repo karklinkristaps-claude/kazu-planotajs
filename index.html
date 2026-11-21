@@ -91,11 +91,28 @@ tr.total.big td{font-size:16px;border-top:2px solid var(--ink)}
 .gcol h3{margin:0;padding:2px 4px;font-family:var(--display);font-size:22px;font-weight:600;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
 .gcol h3 .hint{font-family:var(--body);font-size:12px;font-weight:600}
 .gcol .none{padding:14px 4px;text-align:center;color:var(--muted);font-size:13px}
+.chip.maybe{background:#F6E7A6;color:#6B5310}
+.qmark{flex:none;width:24px;height:24px;padding:0;border-radius:50%;font-size:13px;font-weight:800;line-height:1;color:var(--muted);background:transparent;border:1px solid var(--line)}
+.qmark:hover:not(:disabled){border-color:#C9A227;color:#6B5310}
+.qmark.on{background:#E9C949;border-color:#C9A227;color:#3D2F05}
+.qmark:disabled{opacity:.4;cursor:not-allowed}
+.gnames li .qmark{float:right;margin:0 0 0 8px}
+.gnames li.maybe{background:#FBF1C7}
+.gnames li.maybe .gnote::placeholder{color:#D9C67E}
+.tablebox tr.maybe td{background:#FBF1C7}
 .gnames{list-style:none;margin:0;padding:0;background:var(--panel);border:1px solid var(--line);border-radius:10px}
 .gnames li{padding:7px 12px;border-bottom:1px solid var(--line);font-size:15px}
 .gnames li:last-child{border-bottom:none}
+.gnames li:has(+ li.pair){border-bottom:1px dashed var(--line)}
+.gnames li.pair{padding-left:28px;position:relative}
+.gnames li.pair::before{content:"↳";position:absolute;left:12px;color:var(--gold)}
 .gnames li b{font-weight:600}
-.gnames li .hint{display:block;font-size:13px}
+.gnames li b{display:block}
+.gnote{display:block;width:100%;font:inherit;font-size:13px;color:var(--muted);background:transparent;border:1px solid transparent;border-radius:6px;padding:2px 4px;margin:2px -4px 0;resize:none;min-height:0}
+.gnote:hover{border-color:var(--line)}
+.gnote:focus{background:var(--bg);border-color:var(--accent);color:var(--ink);outline:none}
+.gnote::placeholder{color:var(--line)}
+.gnames li:hover .gnote::placeholder{color:var(--muted)}
 .gcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;min-width:0}
 .gcard label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;gap:2px;min-width:0}
 .gcard .full{grid-column:1/-1}
@@ -490,6 +507,6 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=2026-11-21c"></script>
+<script src="app.js?v=2026-11-21f"></script>
 </body>
 </html>

@@ -186,14 +186,15 @@
   const SIDE_TITLES = {"Līgavaiņa":"Līgavaiņa viesi", "Līgavas":"Līgavas viesi", "Kopīgie":"Kopīgie viesi"};
   const sideOf = g => SIDES.includes(g.side) ? g.side : "Kopīgie";
   function guestStats(){
-    let all = 0, yes = 0, no = 0, inv = 0, notInv = 0;
-    guests.forEach(g => { const c = Math.max(1, num(g.count) || 1); all += c;
+    let all = 0, yes = 0, no = 0, inv = 0, notInv = 0, maybe = 0;
+    // viesi ar "?" nav skaitā, kamēr nav izlemts
+    guests.forEach(g => { const c = Math.max(1, num(g.count) || 1); if(g.maybe){ maybe += c; return; } all += c;
       if(g.status === "Apstiprināja") yes += c; else if(g.status === "Atteica") no += c; else if(g.status === "Ielūgts") inv += c; else notInv += c; });
-    return {all, yes, no, inv, notInv};
+    return {all, yes, no, inv, notInv, maybe};
   }
   function renderGuests(){
     const s = guestStats();
-    $("#guestChips").innerHTML = `<span class="chip ok">${s.yes} nāks</span> <span class="chip warn">${s.inv} gaida atbildi</span> <span class="chip bad">${s.no} atteica</span> <span class="chip mut">${s.notInv} nav ielūgti</span>`;
+    $("#guestChips").innerHTML = `<span class="chip ok">${s.yes} nāks</span> <span class="chip warn">${s.inv} gaida atbildi</span> <span class="chip bad">${s.no} atteica</span> <span class="chip mut">${s.notInv} nav ielūgti</span>${s.maybe ? ` <span class="chip maybe">${s.maybe} ar ?</span>` : ""}`;
     $("#groups").innerHTML = [...new Set(guests.map(g => g.group).filter(Boolean))].map(g => `<option value="${esc(g)}">`).join("");
     { const sel = $("#gSit"), cur = sel.value, ok = guests.some(g => "sit_with" in g) || "inv_style" in settings;
       sel.disabled = !ok; sel.title = ok ? "" : "Vispirms Supabase jāpalaiž supabase-update-2.sql";
@@ -213,16 +214,27 @@
     const sitSel = g => hasSit
       ? `<select data-f="sit_with">${'<option value="">—</option>' + byName.filter(o => o.id !== g.id).map(o => `<option value="${esc(o.id)}"${o.id === g.sit_with ? " selected" : ""}>${esc(o.name)}</option>`).join("")}</select>`
       : `<select disabled title="Vispirms Supabase jāpalaiž supabase-update-2.sql"><option>—</option></select>`;
-    // stabiņu skatā tikai vārds un komentārs; pārējos laukus labo saraksta skatā
-    const card = g => `<li><b>${esc(g.name || "bez vārda")}</b>${g.note ? `<span class="hint">${esc(g.note)}</span>` : ""}</li>`;
+    // stabiņu skatā tikai vārds un labojams komentārs; pārējos laukus labo saraksta skatā
+    // tie, kas sēž kopā, stāv viens zem otra: partneri ieliek uzreiz aiz viesa
+    const pairUp = arr => { const ids = new Set(arr.map(g => g.id)), seen = new Set(), out = [];
+      arr.forEach(g => { if(seen.has(g.id)) return; seen.add(g.id); out.push(g);
+        const o = g.sit_with && ids.has(g.sit_with) && !seen.has(g.sit_with) && arr.find(x => x.id === g.sit_with);
+        if(o){ seen.add(o.id); o._pair = true; out.push(o); } });
+      return out; };
+    list.forEach(g => { delete g._pair; });
+    // viesi ar "?" stāv stabiņa augšā (pāris paliek kopā, ja abi ar "?")
+    const maybeFirst = arr => [...arr.filter(g => g.maybe), ...arr.filter(g => !g.maybe)];
+    const hasMaybe = guests.some(g => "maybe" in g);
+    const qBtn = g => `<button class="qmark${g.maybe ? " on" : ""}" data-act="maybe" ${hasMaybe ? "" : 'disabled title="Vispirms Supabase jāpalaiž supabase-update-4.sql"'} aria-pressed="${g.maybe ? "true" : "false"}" title="${g.maybe ? "Noņemt jautājuma zīmi" : "Atzīmēt ar jautājuma zīmi (neskaitās viesu skaitā)"}">?</button>`;
+    const card = g => `<li data-id="${esc(g.id)}" class="${[g._pair ? "pair" : "", g.maybe ? "maybe" : ""].join(" ").trim()}">${qBtn(g)}<b>${esc(g.name || "bez vārda")}</b><textarea class="grow gnote" rows="1" data-f="note" placeholder="Pievienot komentāru" aria-label="Komentārs viesim ${esc(g.name)}">${esc(g.note)}</textarea></li>`;
     const listView = guestView() === "list";
     $("#guestBody").classList.toggle("gcols", !listView);
     if(listView){
       // saraksta skats: viena tabula, sakārtota pa pusēm (līgavaiņa, līgavas, kopīgie)
-      const rows = [...list].sort((a,b) => SIDES.indexOf(sideOf(a)) - SIDES.indexOf(sideOf(b)));
+      const rows = SIDES.flatMap(side => maybeFirst(pairUp(list.filter(g => sideOf(g) === side))));
       $("#guestBody").innerHTML = `<div class="tablebox"><table>
-        <thead><tr><th>Vārds</th><th>Puse</th><th>Grupa</th><th class="num">Pers.</th><th>Statuss</th><th>Ēdiena piezīmes</th><th>Nakšņo</th><th>Sēž blakus</th><th>Piezīmes</th><th></th></tr></thead>
-        <tbody>${rows.map(g => `<tr data-id="${esc(g.id)}">
+        <thead><tr><th>Vārds</th><th>Puse</th><th>Grupa</th><th class="num">Pers.</th><th>Statuss</th><th>Ēdiena piezīmes</th><th>Nakšņo</th><th>Sēž blakus</th><th>Piezīmes</th><th>?</th><th></th></tr></thead>
+        <tbody>${rows.map(g => `<tr data-id="${esc(g.id)}"${g.maybe ? ' class="maybe"' : ""}>
           <td><input data-f="name" value="${esc(g.name)}" style="min-width:160px" aria-label="Vārds"></td>
           <td><select data-f="side" style="min-width:120px" aria-label="Puse">${opt(SIDES, sideOf(g))}</select></td>
           <td><select data-f="group" style="min-width:110px" aria-label="Grupa">${grpOpts(g.group)}</select></td>
@@ -232,12 +244,14 @@
           <td><input data-f="stay" type="checkbox" ${g.stay?"checked":""} aria-label="Nakšņo"></td>
           <td>${sitSel(g).replace("<select", '<select style="min-width:140px"')}</td>
           <td><textarea class="grow" rows="1" data-f="note" style="min-width:140px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
+          <td>${qBtn(g)}</td>
           <td><button class="del" data-act="del" title="Dzēst viesi">Dzēst</button></td></tr>`).join("")}</tbody></table></div>`;
       labelCells($("#guestBody")); autosize($("#guestBody")); return;
     }
     $("#guestBody").innerHTML = SIDES.map(side => {
-      const mine = list.filter(g => sideOf(g) === side);
-      const all = guests.filter(g => sideOf(g) === side);
+      list.forEach(g => { delete g._pair; });
+      const mine = maybeFirst(pairUp(list.filter(g => sideOf(g) === side)));
+      const all = guests.filter(g => sideOf(g) === side && !g.maybe);
       const pers = all.reduce((t, g) => t + Math.max(1, num(g.count) || 1), 0);
       const yes = all.filter(g => g.status === "Apstiprināja").reduce((t, g) => t + Math.max(1, num(g.count) || 1), 0);
       return `<div class="gcol"><h3>${SIDE_TITLES[side]} <span class="hint">${pers} pers. · ${yes} nāks</span></h3>
@@ -285,6 +299,10 @@
     save(sb.from("plan_guests").update({[inp.dataset.f === "group" ? "grp" : inp.dataset.f]: v}).eq("id", g.id));
   });
   $("#guestBody").addEventListener("click", e => {
+    const q = e.target.closest("button[data-act=maybe]");
+    if(q && db){ const g = guests.find(x => x.id === q.closest("[data-id]").dataset.id); if(!g) return;
+      g.maybe = !g.maybe; renderGuests(); renderOverview();
+      save(sb.from("plan_guests").update({maybe: g.maybe}).eq("id", g.id)); return; }
     const b = e.target.closest("button[data-act=del]"); if(!b || !db) return;
     const tr = b.closest("[data-id]");
     const g = guests.find(x => x.id === tr.dataset.id);
