@@ -214,12 +214,19 @@
       ? `<select data-f="sit_with">${'<option value="">—</option>' + byName.filter(o => o.id !== g.id).map(o => `<option value="${esc(o.id)}"${o.id === g.sit_with ? " selected" : ""}>${esc(o.name)}</option>`).join("")}</select>`
       : `<select disabled title="Vispirms Supabase jāpalaiž supabase-update-2.sql"><option>—</option></select>`;
     // stabiņu skatā tikai vārds un komentārs; pārējos laukus labo saraksta skatā
-    const card = g => `<li><b>${esc(g.name || "bez vārda")}</b>${g.note ? `<span class="hint">${esc(g.note)}</span>` : ""}</li>`;
+    // tie, kas sēž kopā, stāv viens zem otra: partneri ieliek uzreiz aiz viesa
+    const pairUp = arr => { const ids = new Set(arr.map(g => g.id)), seen = new Set(), out = [];
+      arr.forEach(g => { if(seen.has(g.id)) return; seen.add(g.id); out.push(g);
+        const o = g.sit_with && ids.has(g.sit_with) && !seen.has(g.sit_with) && arr.find(x => x.id === g.sit_with);
+        if(o){ seen.add(o.id); o._pair = true; out.push(o); } });
+      return out; };
+    list.forEach(g => { delete g._pair; });
+    const card = g => `<li${g._pair ? ' class="pair"' : ""}><b>${esc(g.name || "bez vārda")}</b>${g.note ? `<span class="hint">${esc(g.note)}</span>` : ""}</li>`;
     const listView = guestView() === "list";
     $("#guestBody").classList.toggle("gcols", !listView);
     if(listView){
       // saraksta skats: viena tabula, sakārtota pa pusēm (līgavaiņa, līgavas, kopīgie)
-      const rows = [...list].sort((a,b) => SIDES.indexOf(sideOf(a)) - SIDES.indexOf(sideOf(b)));
+      const rows = SIDES.flatMap(side => pairUp(list.filter(g => sideOf(g) === side)));
       $("#guestBody").innerHTML = `<div class="tablebox"><table>
         <thead><tr><th>Vārds</th><th>Puse</th><th>Grupa</th><th class="num">Pers.</th><th>Statuss</th><th>Ēdiena piezīmes</th><th>Nakšņo</th><th>Sēž blakus</th><th>Piezīmes</th><th></th></tr></thead>
         <tbody>${rows.map(g => `<tr data-id="${esc(g.id)}">
@@ -236,7 +243,8 @@
       labelCells($("#guestBody")); autosize($("#guestBody")); return;
     }
     $("#guestBody").innerHTML = SIDES.map(side => {
-      const mine = list.filter(g => sideOf(g) === side);
+      list.forEach(g => { delete g._pair; });
+      const mine = pairUp(list.filter(g => sideOf(g) === side));
       const all = guests.filter(g => sideOf(g) === side);
       const pers = all.reduce((t, g) => t + Math.max(1, num(g.count) || 1), 0);
       const yes = all.filter(g => g.status === "Apstiprināja").reduce((t, g) => t + Math.max(1, num(g.count) || 1), 0);
