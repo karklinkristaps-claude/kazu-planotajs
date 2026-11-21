@@ -213,16 +213,8 @@
     const sitSel = g => hasSit
       ? `<select data-f="sit_with">${'<option value="">—</option>' + byName.filter(o => o.id !== g.id).map(o => `<option value="${esc(o.id)}"${o.id === g.sit_with ? " selected" : ""}>${esc(o.name)}</option>`).join("")}</select>`
       : `<select disabled title="Vispirms Supabase jāpalaiž supabase-update-2.sql"><option>—</option></select>`;
-    const card = g => `<div class="gcard" data-id="${esc(g.id)}">
-      <div class="top"><input data-f="name" value="${esc(g.name)}" aria-label="Vārds"><button class="del" data-act="del" title="Dzēst viesi">Dzēst</button></div>
-      <label>Puse<select data-f="side">${opt(SIDES, sideOf(g))}</select></label>
-      <label>Grupa<select data-f="group">${grpOpts(g.group)}</select></label>
-      <label>Statuss<select data-f="status">${opt(STATUSES, g.status || "Nav ielūgts")}</select></label>
-      <label>Personas<input data-f="count" type="number" min="1" step="1" value="${esc(g.count||1)}"></label>
-      <label>Ēdiena piezīmes<input data-f="diet" value="${esc(g.diet)}" placeholder="–"></label>
-      <label class="chk"><input data-f="stay" type="checkbox" ${g.stay?"checked":""}> Nakšņo</label>
-      <label class="full">Sēž blakus${sitSel(g)}</label>
-      <label class="full">Piezīmes<textarea class="grow" rows="1" data-f="note">${esc(g.note)}</textarea></label></div>`;
+    // stabiņu skatā tikai vārds un komentārs; pārējos laukus labo saraksta skatā
+    const card = g => `<li><b>${esc(g.name || "bez vārda")}</b>${g.note ? `<span class="hint">${esc(g.note)}</span>` : ""}</li>`;
     const listView = guestView() === "list";
     $("#guestBody").classList.toggle("gcols", !listView);
     if(listView){
@@ -249,7 +241,7 @@
       const pers = all.reduce((t, g) => t + Math.max(1, num(g.count) || 1), 0);
       const yes = all.filter(g => g.status === "Apstiprināja").reduce((t, g) => t + Math.max(1, num(g.count) || 1), 0);
       return `<div class="gcol"><h3>${SIDE_TITLES[side]} <span class="hint">${pers} pers. · ${yes} nāks</span></h3>
-        ${mine.length ? mine.map(card).join("") : `<p class="none">${all.length ? "Neviens neatbilst meklēšanai" : "Vēl neviena"}</p>`}</div>`;
+        ${mine.length ? `<ul class="gnames">${mine.map(card).join("")}</ul>` : `<p class="none">${all.length ? "Neviens neatbilst meklēšanai" : "Vēl neviena"}</p>`}</div>`;
     }).join("");
     autosize($("#guestBody"));
   }
