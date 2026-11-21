@@ -213,7 +213,7 @@
     const sitSel = g => hasSit
       ? `<select data-f="sit_with">${'<option value="">—</option>' + byName.filter(o => o.id !== g.id).map(o => `<option value="${esc(o.id)}"${o.id === g.sit_with ? " selected" : ""}>${esc(o.name)}</option>`).join("")}</select>`
       : `<select disabled title="Vispirms Supabase jāpalaiž supabase-update-2.sql"><option>—</option></select>`;
-    // stabiņu skatā tikai vārds un komentārs; pārējos laukus labo saraksta skatā
+    // stabiņu skatā tikai vārds un labojams komentārs; pārējos laukus labo saraksta skatā
     // tie, kas sēž kopā, stāv viens zem otra: partneri ieliek uzreiz aiz viesa
     const pairUp = arr => { const ids = new Set(arr.map(g => g.id)), seen = new Set(), out = [];
       arr.forEach(g => { if(seen.has(g.id)) return; seen.add(g.id); out.push(g);
@@ -221,7 +221,7 @@
         if(o){ seen.add(o.id); o._pair = true; out.push(o); } });
       return out; };
     list.forEach(g => { delete g._pair; });
-    const card = g => `<li${g._pair ? ' class="pair"' : ""}><b>${esc(g.name || "bez vārda")}</b>${g.note ? `<span class="hint">${esc(g.note)}</span>` : ""}</li>`;
+    const card = g => `<li data-id="${esc(g.id)}"${g._pair ? ' class="pair"' : ""}><b>${esc(g.name || "bez vārda")}</b><textarea class="grow gnote" rows="1" data-f="note" placeholder="Pievienot komentāru" aria-label="Komentārs viesim ${esc(g.name)}">${esc(g.note)}</textarea></li>`;
     const listView = guestView() === "list";
     $("#guestBody").classList.toggle("gcols", !listView);
     if(listView){
