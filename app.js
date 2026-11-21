@@ -223,6 +223,26 @@
       <label class="chk"><input data-f="stay" type="checkbox" ${g.stay?"checked":""}> Nakšņo</label>
       <label class="full">Sēž blakus${sitSel(g)}</label>
       <label class="full">Piezīmes<textarea class="grow" rows="1" data-f="note">${esc(g.note)}</textarea></label></div>`;
+    const listView = guestView() === "list";
+    $("#guestBody").classList.toggle("gcols", !listView);
+    if(listView){
+      // saraksta skats: viena tabula, sakārtota pa pusēm (līgavaiņa, līgavas, kopīgie)
+      const rows = [...list].sort((a,b) => SIDES.indexOf(sideOf(a)) - SIDES.indexOf(sideOf(b)));
+      $("#guestBody").innerHTML = `<div class="tablebox"><table>
+        <thead><tr><th>Vārds</th><th>Puse</th><th>Grupa</th><th class="num">Pers.</th><th>Statuss</th><th>Ēdiena piezīmes</th><th>Nakšņo</th><th>Sēž blakus</th><th>Piezīmes</th><th></th></tr></thead>
+        <tbody>${rows.map(g => `<tr data-id="${esc(g.id)}">
+          <td><input data-f="name" value="${esc(g.name)}" style="min-width:160px" aria-label="Vārds"></td>
+          <td><select data-f="side" style="min-width:120px" aria-label="Puse">${opt(SIDES, sideOf(g))}</select></td>
+          <td><select data-f="group" style="min-width:110px" aria-label="Grupa">${grpOpts(g.group)}</select></td>
+          <td class="num"><input data-f="count" type="number" min="1" step="1" value="${esc(g.count||1)}" style="width:60px" aria-label="Personas"></td>
+          <td><select data-f="status" style="min-width:150px" aria-label="Statuss">${opt(STATUSES, g.status || "Nav ielūgts")}</select></td>
+          <td><input data-f="diet" value="${esc(g.diet)}" placeholder="–" style="min-width:100px" aria-label="Ēdiena piezīmes"></td>
+          <td><input data-f="stay" type="checkbox" ${g.stay?"checked":""} aria-label="Nakšņo"></td>
+          <td>${sitSel(g).replace("<select", '<select style="min-width:140px"')}</td>
+          <td><textarea class="grow" rows="1" data-f="note" style="min-width:140px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
+          <td><button class="del" data-act="del" title="Dzēst viesi">Dzēst</button></td></tr>`).join("")}</tbody></table></div>`;
+      labelCells($("#guestBody")); autosize($("#guestBody")); return;
+    }
     $("#guestBody").innerHTML = SIDES.map(side => {
       const mine = list.filter(g => sideOf(g) === side);
       const all = guests.filter(g => sideOf(g) === side);
@@ -233,6 +253,10 @@
     }).join("");
     autosize($("#guestBody"));
   }
+  // skats: "cols" (trīs stabiņi) vai "list" (tabula); izvēle paliek šajā pārlūkā
+  function guestView(){ try{ return localStorage.getItem("kazuGuestView") === "list" ? "list" : "cols"; }catch(e){ return "cols"; } }
+  $("#gView").value = guestView();
+  $("#gView").addEventListener("change", e => { try{ localStorage.setItem("kazuGuestView", e.target.value); }catch(err){} renderGuests(); });
   $("#gSearch").addEventListener("input", renderGuests);
   $("#gFilter").addEventListener("change", renderGuests);
   $("#guestForm").addEventListener("submit", e => {
