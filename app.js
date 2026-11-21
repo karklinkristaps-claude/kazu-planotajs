@@ -129,7 +129,7 @@
   $("#budgetBody").addEventListener("change", e => {
     const inp0 = e.target;
     if(inp0.dataset.target && db){ settings.target = num(inp0.value); renderAll(); save(sb.from("plan_settings").upsert(settingsRow())); return; }
-    const inp = e.target, tr = inp.closest("tr[data-id]"); if(!tr || !inp.dataset.f || !db) return;
+    const inp = e.target, tr = inp.closest("[data-id]"); if(!tr || !inp.dataset.f || !db) return;
     const r = budget.find(x => x.id === tr.dataset.id); if(!r) return;
     const f = inp.dataset.f;
     if(f === "planned"){
@@ -181,6 +181,10 @@
   });
 
   // ---------- guests ----------
+  // trīs stabiņi viesu sarakstā; viesis bez puses skaitās pie kopīgajiem
+  const SIDES = ["Līgavaiņa", "Līgavas", "Kopīgie"];
+  const SIDE_TITLES = {"Līgavaiņa":"Līgavaiņa viesi", "Līgavas":"Līgavas viesi", "Kopīgie":"Kopīgie viesi"};
+  const sideOf = g => SIDES.includes(g.side) ? g.side : "Kopīgie";
   function guestStats(){
     let all = 0, yes = 0, no = 0, inv = 0, notInv = 0;
     guests.forEach(g => { const c = Math.max(1, num(g.count) || 1); all += c;
@@ -198,29 +202,36 @@
     if(!guestsLoaded) return;
     const q = $("#gSearch").value.trim().toLowerCase(), f = $("#gFilter").value;
     const list = guests.filter(g => (!f || (g.status || "Nav ielūgts") === f) && (!q || (g.name+" "+(g.group||"")).toLowerCase().includes(q)))
-      .sort((a,b) => (a.side||"").localeCompare(b.side||"","lv") || (a.group||"").localeCompare(b.group||"","lv") || (a.name||"").localeCompare(b.name||"","lv"));
-    if(!guests.length){ $("#guestBody").innerHTML = `<tr><td colspan="10" class="empty">Sarakstā vēl nav neviena viesa. Pievieno pirmo ar formu augstāk.</td></tr>`; return; }
-    if(!list.length){ $("#guestBody").innerHTML = `<tr><td colspan="10" class="empty">Neviens viesis neatbilst meklēšanai.</td></tr>`; return; }
+      .sort((a,b) => (a.group||"").localeCompare(b.group||"","lv") || (a.name||"").localeCompare(b.name||"","lv"));
+    if(!guests.length){ $("#guestBody").innerHTML = `<p class="empty">Sarakstā vēl nav neviena viesa. Pievieno pirmo ar formu augstāk.</p>`; return; }
+    if(!list.length){ $("#guestBody").innerHTML = `<p class="empty">Neviens viesis neatbilst meklēšanai.</p>`; return; }
     const opt = (arr, v) => arr.map(o => `<option${o===v?" selected":""}>${o}</option>`).join("");
     // vecas brīvi ierakstītas grupas (piem., "Darbs") paliek redzamas, līdz tās nomaina
     const grpOpts = v => (!v ? '<option value="" selected>—</option>' : "") + (v && !GROUPS.includes(v) ? `<option selected>${esc(v)}</option>` : "") + opt(GROUPS, v);
     const hasSit = guests.some(g => "sit_with" in g) || "inv_style" in settings;
     const byName = [...guests].sort((a,b) => (a.name||"").localeCompare(b.name||"","lv"));
     const sitSel = g => hasSit
-      ? `<select data-f="sit_with" style="min-width:140px" aria-label="Sēž blakus">${'<option value="">—</option>' + byName.filter(o => o.id !== g.id).map(o => `<option value="${esc(o.id)}"${o.id === g.sit_with ? " selected" : ""}>${esc(o.name)}</option>`).join("")}</select>`
-      : `<select disabled style="min-width:140px" title="Vispirms Supabase jāpalaiž supabase-update-2.sql"><option>—</option></select>`;
-    $("#guestBody").innerHTML = list.map(g => `<tr data-id="${esc(g.id)}">
-      <td><input data-f="name" value="${esc(g.name)}" style="min-width:160px" aria-label="Vārds"></td>
-      <td><select data-f="side" style="min-width:130px" aria-label="Puse">${opt(["Līgavas","Līgavaiņa","Kopīgie"], g.side)}</select></td>
-      <td><select data-f="group" style="min-width:110px" aria-label="Grupa">${grpOpts(g.group)}</select></td>
-      <td class="num"><input data-f="count" type="number" min="1" step="1" value="${esc(g.count||1)}" style="width:60px" aria-label="Personas"></td>
-      <td><select data-f="status" style="min-width:160px" aria-label="Statuss">${opt(STATUSES, g.status || "Nav ielūgts")}</select></td>
-      <td><input data-f="diet" value="${esc(g.diet)}" placeholder="–" style="min-width:100px" aria-label="Ēdiena piezīmes"></td>
-      <td><input data-f="stay" type="checkbox" ${g.stay?"checked":""} aria-label="Nakšņo"></td>
-      <td>${sitSel(g)}</td>
-      <td><textarea class="grow" rows="1" data-f="note" style="min-width:140px" aria-label="Piezīmes">${esc(g.note)}</textarea></td>
-      <td><button class="del" data-act="del" title="Dzēst viesi">Dzēst</button></td></tr>`).join("");
-    labelCells($("#viesi")); autosize($("#guestBody"));
+      ? `<select data-f="sit_with">${'<option value="">—</option>' + byName.filter(o => o.id !== g.id).map(o => `<option value="${esc(o.id)}"${o.id === g.sit_with ? " selected" : ""}>${esc(o.name)}</option>`).join("")}</select>`
+      : `<select disabled title="Vispirms Supabase jāpalaiž supabase-update-2.sql"><option>—</option></select>`;
+    const card = g => `<div class="gcard" data-id="${esc(g.id)}">
+      <div class="top"><input data-f="name" value="${esc(g.name)}" aria-label="Vārds"><button class="del" data-act="del" title="Dzēst viesi">Dzēst</button></div>
+      <label>Puse<select data-f="side">${opt(SIDES, sideOf(g))}</select></label>
+      <label>Grupa<select data-f="group">${grpOpts(g.group)}</select></label>
+      <label>Statuss<select data-f="status">${opt(STATUSES, g.status || "Nav ielūgts")}</select></label>
+      <label>Personas<input data-f="count" type="number" min="1" step="1" value="${esc(g.count||1)}"></label>
+      <label>Ēdiena piezīmes<input data-f="diet" value="${esc(g.diet)}" placeholder="–"></label>
+      <label class="chk"><input data-f="stay" type="checkbox" ${g.stay?"checked":""}> Nakšņo</label>
+      <label class="full">Sēž blakus${sitSel(g)}</label>
+      <label class="full">Piezīmes<textarea class="grow" rows="1" data-f="note">${esc(g.note)}</textarea></label></div>`;
+    $("#guestBody").innerHTML = SIDES.map(side => {
+      const mine = list.filter(g => sideOf(g) === side);
+      const all = guests.filter(g => sideOf(g) === side);
+      const pers = all.reduce((t, g) => t + Math.max(1, num(g.count) || 1), 0);
+      const yes = all.filter(g => g.status === "Apstiprināja").reduce((t, g) => t + Math.max(1, num(g.count) || 1), 0);
+      return `<div class="gcol"><h3>${SIDE_TITLES[side]} <span class="hint">${pers} pers. · ${yes} nāks</span></h3>
+        ${mine.length ? mine.map(card).join("") : `<p class="none">${all.length ? "Neviens neatbilst meklēšanai" : "Vēl neviena"}</p>`}</div>`;
+    }).join("");
+    autosize($("#guestBody"));
   }
   $("#gSearch").addEventListener("input", renderGuests);
   $("#gFilter").addEventListener("change", renderGuests);
@@ -242,7 +253,7 @@
     })());
   });
   $("#guestBody").addEventListener("change", e => {
-    const inp = e.target, tr = inp.closest("tr[data-id]"); if(!tr || !inp.dataset.f || !db) return;
+    const inp = e.target, tr = inp.closest("[data-id]"); if(!tr || !inp.dataset.f || !db) return;
     const g = guests.find(x => x.id === tr.dataset.id); if(!g) return;
     let v = inp.type === "checkbox" ? inp.checked : inp.type === "number" ? Math.max(1, num(inp.value)||1) : inp.value;
     if(inp.dataset.f === "sit_with"){
@@ -259,7 +270,7 @@
   });
   $("#guestBody").addEventListener("click", e => {
     const b = e.target.closest("button[data-act=del]"); if(!b || !db) return;
-    const tr = b.closest("tr[data-id]");
+    const tr = b.closest("[data-id]");
     const g = guests.find(x => x.id === tr.dataset.id);
     if(askDel(`Vai tiešām dzēst viesi „${(g && g.name) || "bez vārda"}”?`)) save(sb.from("plan_guests").delete().eq("id", tr.dataset.id));
   });
