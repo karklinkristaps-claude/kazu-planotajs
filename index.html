@@ -91,6 +91,11 @@ tr.total.big td{font-size:16px;border-top:2px solid var(--ink)}
 .gcol h3{margin:0;padding:2px 4px;font-family:var(--display);font-size:22px;font-weight:600;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
 .gcol h3 .hint{font-family:var(--body);font-size:12px;font-weight:600}
 .gcol .none{padding:14px 4px;text-align:center;color:var(--muted);font-size:13px}
+.gnames{list-style:none;margin:0;padding:0;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.gnames li{padding:7px 12px;border-bottom:1px solid var(--line);font-size:15px}
+.gnames li:last-child{border-bottom:none}
+.gnames li b{font-weight:600}
+.gnames li .hint{display:block;font-size:13px}
 .gcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;min-width:0}
 .gcard label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;gap:2px;min-width:0}
 .gcard .full{grid-column:1/-1}
@@ -485,6 +490,6 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=2026-11-21b"></script>
+<script src="app.js?v=2026-11-21c"></script>
 </body>
 </html>
