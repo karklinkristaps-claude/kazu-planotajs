@@ -391,6 +391,7 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
     <datalist id="groups"></datalist>
     <div class="toolbar">
       <input class="grow" id="gSearch" placeholder="Meklēt vārdu vai grupu" aria-label="Meklēt viesus">
+      <select id="gView" aria-label="Skats" style="width:auto"><option value="cols">Stabiņi</option><option value="list">Saraksts</option></select>
       <select id="gFilter" aria-label="Filtrēt pēc statusa" style="width:auto">
         <option value="">Visi statusi</option><option>Nav ielūgts</option><option>Ielūgts</option><option>Apstiprināja</option><option>Atteica</option>
       </select>
@@ -484,6 +485,6 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=2026-11-21b"></script>
 </body>
 </html>
