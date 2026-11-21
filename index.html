@@ -84,6 +84,23 @@ tr.cat td.num{padding-right:12px}
 tr.total td{font-weight:700;padding:8px 10px;border-bottom:none}
 tr.total.big td{font-size:16px;border-top:2px solid var(--ink)}
 .hint{font-size:12px;color:var(--muted)}
+/* Viesi trīs stabiņos: līgavaiņa, līgavas, kopīgie; šaurā ekrānā viens zem otra */
+.gcols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.gcols>.empty{grid-column:1/-1}
+.gcol{background:var(--accent-soft);border-radius:12px;padding:10px;display:grid;gap:8px;min-width:0}
+.gcol h3{margin:0;padding:2px 4px;font-family:var(--display);font-size:22px;font-weight:600;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.gcol h3 .hint{font-family:var(--body);font-size:12px;font-weight:600}
+.gcol .none{padding:14px 4px;text-align:center;color:var(--muted);font-size:13px}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;min-width:0}
+.gcard label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;gap:2px;min-width:0}
+.gcard .full{grid-column:1/-1}
+.gcard .top{grid-column:1/-1;display:flex;gap:8px;align-items:center}
+.gcard .top input{font-weight:700;font-size:15px}
+.gcard input:not([type=checkbox]),.gcard select,.gcard textarea{font:inherit;font-size:14px;text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;width:100%;min-width:0}
+.gcard textarea{resize:none}
+.gcard label.chk{flex-direction:row;align-items:center;gap:6px;align-self:end;padding-bottom:4px}
+.gcard input[type=checkbox]{width:18px;height:18px}
+@media (max-width:900px){.gcols{grid-template-columns:1fr}}
 .chip{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
 .chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
 .chip.bad{background:var(--bad-soft);color:var(--bad)} .chip.mut{background:var(--accent-soft);color:var(--muted)}
@@ -365,7 +382,7 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
     </div>
     <form class="form" id="guestForm" style="margin-bottom:12px">
       <label for="gName">Vārds, uzvārds<input id="gName" required placeholder="Piem., Anna Bērziņa"></label>
-      <label for="gSide">Puse<select id="gSide"><option>Līgavas</option><option>Līgavaiņa</option><option>Kopīgie</option></select></label>
+      <label for="gSide">Puse<select id="gSide"><option>Līgavaiņa</option><option>Līgavas</option><option>Kopīgie</option></select></label>
       <label for="gGroup">Grupa<select id="gGroup"><option>Ģimene</option><option>Draugi</option><option>Kolēģi</option><option>Cits</option></select></label>
       <label for="gCount">Personas<input id="gCount" type="number" min="1" step="1" value="1"></label>
       <label for="gSit">Sēž blakus<select id="gSit"><option value="">—</option></select></label>
@@ -378,12 +395,7 @@ select.want.yes{color:var(--ok);font-weight:700} select.want.no{color:var(--bad)
         <option value="">Visi statusi</option><option>Nav ielūgts</option><option>Ielūgts</option><option>Apstiprināja</option><option>Atteica</option>
       </select>
     </div>
-    <div class="tablebox">
-      <table>
-        <thead><tr><th>Vārds</th><th>Puse</th><th>Grupa</th><th class="num">Pers.</th><th>Statuss</th><th>Ēdiena piezīmes</th><th>Nakšņo</th><th>Sēž blakus</th><th>Piezīmes</th><th></th></tr></thead>
-        <tbody id="guestBody"><tr><td colspan="10" class="empty">Ielādē viesus…</td></tr></tbody>
-      </table>
-    </div>
+    <div class="gcols" id="guestBody"><p class="empty">Ielādē viesus…</p></div>
   </section>
 
   <!-- UZDEVUMI -->
